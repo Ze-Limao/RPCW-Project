@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Ontology - {{ pokemon.name|title }}</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-gradient-to-b from-red-600 to-red-800 text-white shadow-lg items-center">
+        <div class="container mx-auto p-3 flex justify-between items-center">
+            <img src="static/images/logo.png" alt="Pokentology" class="h-12">
+            <div class="flex space-x-2">
+                <button class=" text-white px-4 py-2 rounded-lg hover:bg-white hover:text-red-700 transition-colors duration-300 flex items-center">
+                    
+                    Generate Ontology
+                </button>
+                <button class=" text-white px-4 py-2 rounded-lg hover:bg-white hover:text-red-700 transition-colors duration-300 flex items-center">
+                    
+                    Explore
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Pokemon Card -->
+        <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl transform hover:scale-105 transition-transform duration-300">
+            <!-- Pokemon Header with Curved Background -->
+            <div class="relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-t-xl"></div>
+                <div class="relative px-6 py-8 flex justify-center">
+                    <img src="{{ pokemon.icon }}" alt="{{ pokemon.name }}" class="w-40 h-40 object-contain drop-shadow-lg">
+                </div>
+                <!-- Pokeball Design Element -->
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-16 h-16 bg-white rounded-full border-4 border-gray-200 flex items-center justify-center">
+                    <div class="w-8 h-8 bg-red-500 rounded-full"></div>
+                </div>
+            </div>
+            
+            <!-- Pokemon Info -->
+            <div class="px-6 pt-10 pb-6">
+                <h2 class="text-3xl font-bold text-center text-gray-800 capitalize mb-2">{{ pokemon.name }}</h2>
+                
+                <div class="flex justify-center mb-4">
+                    {% if pokemon.type == 'water' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-blue-500 text-white">{{ pokemon.type }}</span>
+                    {% elif pokemon.type == 'fire' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-red-500 text-white">{{ pokemon.type }}</span>
+                    {% elif pokemon.type == 'grass' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-green-500 text-white">{{ pokemon.type }}</span>
+                    {% elif pokemon.type == 'electric' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-yellow-500 text-white">{{ pokemon.type }}</span>
+                    {% else %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-gray-500 text-white">{{ pokemon.type }}</span>
+                    {% endif %}
+                </div>
+                
+                <!-- Stats -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-100 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-red-500">{{ pokemon.hp }}</div>
+                        <div class="text-sm text-gray-600">HP</div>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-orange-500">{{ pokemon.attack }}</div>
+                        <div class="text-sm text-gray-600">Attack</div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        View Details
+                    </button>
+                    <button class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Add to Team
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ontology Section -->
+        <div class="mt-12 max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Pokemon Ontology Tools</h2>
+                <p class="text-gray-600 mb-6">Explore and generate ontologies for Pokemon data. Discover relationships between different Pokemon types, abilities, and characteristics.</p>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Generate Ontology Card -->
+                    <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-yellow-500 p-3 rounded-lg mr-4">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800">Generate Ontology</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">Create comprehensive ontologies based on Pokemon characteristics, evolution chains, and type relationships.</p>
+                        <button class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg transition-colors duration-300">
+                            Start Generation
+                        </button>
+                    </div>
+                    
+                    <!-- Explore Card -->
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-500 p-3 rounded-lg mr-4">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800">Explore Pokemon Data</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">Browse through existing ontologies, visualize relationships, and discover patterns in Pokemon data.</p>
+                        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors duration-300">
+                            Start Exploring
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-12 py-6">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2025 Pokéntology</p>
+            <p class="text-gray-400 text-sm mt-2">A tool for exploring and generating Pokemon data relationships</p>
+        </div>
+    </footer>
+</body>
+</html>
