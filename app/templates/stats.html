@@ -1,0 +1,88 @@
+<!-- Stats -->
+<div class="mb-6">
+    <div class="grid grid-cols-6 gap-1">
+        <!-- HP -->
+        <div class="flex flex-col items-center">
+            <div class="w-full flex flex-col-reverse">
+                {% for i in range(15) %}
+                {% if i < (pokemon.hp / 10)|int %} <div class="h-2 w-full bg-blue-500 border border-gray-200">
+            </div>
+            {% else %}
+            <div class="h-2 w-full bg-gray-100 border border-gray-200"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <span class="text-xs font-medium mt-1">PS</span>
+    </div>
+
+    <!-- Attack -->
+    <div class="flex flex-col items-center">
+        <div class="w-full flex flex-col-reverse">
+            {% for i in range(15) %}
+            {% if i < (pokemon.attack / 10)|int %} <div class="h-2 w-full bg-blue-500 border border-gray-200">
+        </div>
+        {% else %}
+        <div class="h-2 w-full bg-gray-100 border border-gray-200"></div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <span class="text-xs font-medium mt-1">Ataque</span>
+</div>
+
+<!-- Defense -->
+<div class="flex flex-col items-center">
+    <div class="w-full flex flex-col-reverse">
+        {% for i in range(15) %}
+        {% if i < (pokemon.defense / 10)|int %} <div class="h-2 w-full bg-blue-500 border border-gray-200">
+    </div>
+    {% else %}
+    <div class="h-2 w-full bg-gray-100 border border-gray-200"></div>
+    {% endif %}
+    {% endfor %}
+</div>
+<span class="text-xs font-medium mt-1">Defesa</span>
+</div>
+
+<!-- Special Attack -->
+<div class="flex flex-col items-center">
+    <div class="w-full flex flex-col-reverse">
+        {% for i in range(15) %}
+        {% if i < (pokemon.special_attack / 10)|int %} <div class="h-2 w-full bg-blue-500 border border-gray-200">
+    </div>
+    {% else %}
+    <div class="h-2 w-full bg-gray-100 border border-gray-200"></div>
+    {% endif %}
+    {% endfor %}
+</div>
+<span class="text-xs font-medium mt-1">Atq Esp</span>
+</div>
+
+<!-- Special Defense -->
+<div class="flex flex-col items-center">
+    <div class="w-full flex flex-col-reverse">
+        {% for i in range(15) %}
+        {% if i < (pokemon.special_defense / 10)|int %} <div class="h-2 w-full bg-blue-500 border border-gray-200">
+    </div>
+    {% else %}
+    <div class="h-2 w-full bg-gray-100 border border-gray-200"></div>
+    {% endif %}
+    {% endfor %}
+</div>
+<span class="text-xs font-medium mt-1">Def Esp</span>
+</div>
+
+<!-- Speed -->
+<div class="flex flex-col items-center">
+    <div class="w-full flex flex-col-reverse">
+        {% for i in range(15) %}
+        {% if i < (pokemon.speed / 10)|int %} <div class="h-2 w-full bg-blue-500 border border-gray-200">
+    </div>
+    {% else %}
+    <div class="h-2 w-full bg-gray-100 border border-gray-200"></div>
+    {% endif %}
+    {% endfor %}
+</div>
+<span class="text-xs font-medium mt-1">Velocidade</span>
+</div>
+</div>
+</div>

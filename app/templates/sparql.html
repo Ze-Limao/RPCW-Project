@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Ontology - SPARQL Query</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+</head>
+<style>
+    body {
+        background-image: url('static/images/background.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-position: center;
+    }
+</style>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="bg-gradient-to-r from-red-600 to-red-800 text-white shadow-lg items-center">
+        <div class="container mx-auto flex p-2 justify-between items-center">
+            <a href="/">
+                <img src="static/images/logo.png" alt="Pokentology" class="h-12">
+            </a>
+            <div class="flex space-x-2">
+                <a href="/generate"
+                    class="cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-white hover:text-red-700 transition-colors duration-300 flex items-center">
+                    Generate Ontology
+                </a>
+                <a href="/explore"
+                    class="cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-white hover:text-red-700 transition-colors duration-300 flex items-center">
+                    Explore
+                </a>
+                <a href="/sparql"
+                    class="cursor-pointer  px-4 py-2 rounded-lg bg-white text-red-700 transition-colors duration-300 flex items-center">
+                    SPARQL
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">SPARQL Query Explorer</h1>
+
+            <!-- Main Query Interface -->
+            <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mb-8">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-purple-700 rounded-t-xl"></div>
+                    <div class="relative px-6 py-4 flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-white">Query Editor</h2>
+                    </div>
+                    <!-- Pokeball Design Element -->
+                    <div
+                        class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-12 h-12 bg-white rounded-full border-4 border-gray-200 flex items-center justify-center z-10">
+                        <div class="w-6 h-6 bg-purple-500 rounded-full"></div>
+                    </div>
+                </div>
+
+                <div class="p-6 pt-10">
+                    <!-- Query Editor -->
+                    <div class="mb-4">
+                        <div class="border border-gray-300 rounded-md overflow-hidden">
+                            <div
+                                class="bg-gray-50 px-4 py-2 border-b border-gray-300 flex justify-between items-center">
+                                <span class="text-sm font-medium text-gray-700">SPARQL Query</span>
+                            </div>
+                            <textarea id="sparqlQuery" rows="10"
+                                class="w-full p-4 font-mono text-sm focus:outline-none focus:ring-0 border-0"
+                                placeholder="Enter SPARQL query...">PREFIX poke: <http://pokentology.org/ontology/>
+                            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                            
+                            SELECT ?pokemon ?type
+                            WHERE {
+                                ?pokemon rdf:type poke:Pokemon .
+                                ?pokemon poke:hasType ?typeEntity .
+                                ?typeEntity poke:name ?type .
+                            }
+                            LIMIT 10</textarea>
+                        </div>
+                    </div>
+                    <div class="flex items-center mb-4 justify-end">
+                        <div class="border border-gray-300 rounded-md overflow-hidden mr-2">
+                            <select id="queryFormat"
+                                class="block pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md">
+                                <option value="json">JSON</option>
+                                <option value="xml">XML</option>
+                                <option value="csv">CSV</option>
+                                <option value="tsv">TSV</option>
+                            </select>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button id="runQuery"
+                                class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                                    </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Run Query
+                            </button>
+                            <button id="clearQuery"
+                                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Query Results -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-lg font-semibold text-gray-800">Results</h3>
+                            <div class="flex space-x-2">
+                                <button id="downloadResults"
+                                    class="text-gray-500 hover:text-gray-700 cursor-pointer flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                    </svg>
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                        <div class="border border-gray-300 rounded-md overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Pokemon</th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Bulbasaur</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Grass</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Bulbasaur</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">Poison</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Charmander
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Fire</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Squirtle</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Water</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Pikachu</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Electric</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sample Queries -->
+            <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-700 rounded-t-xl"></div>
+                    <div class="relative px-6 py-4">
+                        <h2 class="text-xl font-bold text-white">Sample Queries</h2>
+                    </div>
+                    <!-- Pokeball Design Element -->
+                    <div
+                        class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-12 h-12 bg-white rounded-full border-4 border-gray-200 flex items-center justify-center z-10">
+                        <div class="w-6 h-6 bg-blue-500 rounded-full"></div>
+                    </div>
+                </div>
+
+                <div class="p-6 pt-10">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Sample Query 1 -->
+                        <div
+                            class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                                <h3 class="font-medium text-gray-800">All Pokemon by Type</h3>
+                            </div>
+                            <div class="p-4">
+                                <pre class="text-xs text-gray-700 bg-gray-50 p-2 rounded overflow-x-auto">PREFIX poke: &lt;http://pokentology.org/ontology/&gt;
+PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+
+SELECT ?pokemon ?type
+WHERE {
+  ?pokemon rdf:type poke:Pokemon .
+  ?pokemon poke:hasType ?typeEntity .
+  ?typeEntity poke:name ?type .
+}
+ORDER BY ?type ?pokemon</pre>
+                                <button
+                                    class="cursor-pointer text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                                    onclick="loadSampleQuery(1)">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+                                    Load Query
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Sample Query 2 -->
+                        <div
+                            class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                                <h3 class="font-medium text-gray-800">Evolution Chains</h3>
+                            </div>
+                            <div class="p-4">
+                                <pre class="text-xs text-gray-700 bg-gray-50 p-2 rounded overflow-x-auto">PREFIX poke: &lt;http://pokentology.org/ontology/&gt;
+PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+
+SELECT ?pokemon ?evolvesTo
+WHERE {
+  ?pokemon poke:evolvesTo ?evolution .
+  ?pokemon poke:name ?pokemonName .
+  ?evolution poke:name ?evolvesTo .
+}
+ORDER BY ?pokemon</pre>
+                                <button class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                                    onclick="loadSampleQuery(2)">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+                                    Load Query
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Sample Query 3 -->
+                        <div
+                            class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                                <h3 class="font-medium text-gray-800">Pokemon by Ability</h3>
+                            </div>
+                            <div class="p-4">
+                                <pre class="text-xs text-gray-700 bg-gray-50 p-2 rounded overflow-x-auto">PREFIX poke: &lt;http://pokentology.org/ontology/&gt;
+PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+
+SELECT ?ability (COUNT(?pokemon) as ?count)
+WHERE {
+  ?pokemon poke:hasAbility ?abilityEntity .
+  ?abilityEntity poke:name ?ability .
+}
+GROUP BY ?ability
+ORDER BY DESC(?count)</pre>
+                                <button class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                                    onclick="loadSampleQuery(3)">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+                                    Load Query
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Sample Query 4 -->
+                        <div
+                            class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                                <h3 class="font-medium text-gray-800">Type Effectiveness</h3>
+                            </div>
+                            <div class="p-4">
+                                <pre class="text-xs text-gray-700 bg-gray-50 p-2 rounded overflow-x-auto">PREFIX poke: &lt;http://pokentology.org/ontology/&gt;
+PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+
+SELECT ?attackType ?defendType ?effectiveness
+WHERE {
+  ?relation rdf:type poke:TypeEffectiveness .
+  ?relation poke:attackType ?attackTypeEntity .
+  ?relation poke:defendType ?defendTypeEntity .
+  ?relation poke:effectivenessMultiplier ?effectiveness .
+  ?attackTypeEntity poke:name ?attackType .
+  ?defendTypeEntity poke:name ?defendType .
+}
+ORDER BY ?attackType ?defendType</pre>
+                                <button class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                                    onclick="loadSampleQuery(4)">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+                                    Load Query
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+            // Load sample query
+            function loadSampleQuery(queryId) {
+                const queryEditor = document.getElementById('sparqlQuery');
+
+                switch (queryId) {
+                    case 1:
+                        queryEditor.value = `PREFIX poke: <http://pokentology.org/ontology/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?pokemon ?type
+WHERE {
+  ?pokemon rdf:type poke:Pokemon .
+  ?pokemon poke:hasType ?typeEntity .
+  ?typeEntity poke:name ?type .
+}
+ORDER BY ?type ?pokemon`;
+                        break;
+                    case 2:
+                        queryEditor.value = `PREFIX poke: <http://pokentology.org/ontology/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?pokemon ?evolvesTo
+WHERE {
+  ?pokemon poke:evolvesTo ?evolution .
+  ?pokemon poke:name ?pokemonName .
+  ?evolution poke:name ?evolvesTo .
+}
+ORDER BY ?pokemon`;
+                        break;
+                    case 3:
+                        queryEditor.value = `PREFIX poke: <http://pokentology.org/ontology/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?ability (COUNT(?pokemon) as ?count)
+WHERE {
+  ?pokemon poke:hasAbility ?abilityEntity .
+  ?abilityEntity poke:name ?ability .
+}
+GROUP BY ?ability
+ORDER BY DESC(?count)`;
+                        break;
+                    case 4:
+                        queryEditor.value = `PREFIX poke: <http://pokentology.org/ontology/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?attackType ?defendType ?effectiveness
+WHERE {
+  ?relation rdf:type poke:TypeEffectiveness .
+  ?relation poke:attackType ?attackTypeEntity .
+  ?relation poke:defendType ?defendTypeEntity .
+  ?relation poke:effectivenessMultiplier ?effectiveness .
+  ?attackTypeEntity poke:name ?attackType .
+  ?defendTypeEntity poke:name ?defendType .
+}
+ORDER BY ?attackType ?defendType`;
+                        break;
+                }
+
+                // Scroll to query editor
+                queryEditor.scrollIntoView({ behavior: 'smooth' });
+                queryEditor.focus();
+            }
+
+            // Clear query
+            document.getElementById('clearQuery').addEventListener('click', function () {
+                document.getElementById('sparqlQuery').value = '';
+            });
+
+            // Run query (just for demonstration)
+            document.getElementById('runQuery').addEventListener('click', function () {
+                alert('Query execution would happen here in a real application.');
+            });
+
+            // Copy query
+            document.getElementById('copyQuery').addEventListener('click', function () {
+                const queryText = document.getElementById('sparqlQuery').value;
+                navigator.clipboard.writeText(queryText).then(function () {
+                    alert('Query copied to clipboard!');
+                });
+            });
+
+            // Copy results (just for demonstration)
+            document.getElementById('copyResults').addEventListener('click', function () {
+                alert('Results would be copied to clipboard in a real application.');
+            });
+
+            // Download query (just for demonstration)
+            document.getElementById('downloadQuery').addEventListener('click', function () {
+                alert('Query would be downloaded in a real application.');
+            });
+
+            // Download results (just for demonstration)
+            document.getElementById('downloadResults').addEventListener('click', function () {
+                alert('Results would be downloaded in a real application.');
+            });
+        </script>
+    </div>
+    <footer class="bg-gray-800 text-white py-6 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2025 Pokéntology</p>
+            <p class="text-gray-400 text-sm mt-2">A tool for exploring and generating Pokemon data relationships</p>
+        </div>
+    </footer>
+</body>
+
+</html>
