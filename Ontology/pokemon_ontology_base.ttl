@@ -9,33 +9,204 @@
 <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology> rdf:type owl:Ontology .
 
 #################################################################
+#    Object Properties
+#################################################################
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#effectiveness
+:effectiveness rdf:type owl:ObjectProperty ;
+               rdfs:domain :Pokemon ;
+               rdfs:range :Type .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#hasAbility
+:hasAbility rdf:type owl:ObjectProperty ;
+            rdfs:domain :Pokemon ;
+            rdfs:range :Ability .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#isFrom
+:isFrom rdf:type owl:ObjectProperty ;
+        rdfs:domain :Pokemon ;
+        rdfs:range :Region .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#normalDamage
+:normalDamage rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf :effectiveness .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#takes025xDamage
+:takes025xDamage rdf:type owl:ObjectProperty ;
+                 rdfs:subPropertyOf :StrongAgainst .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#takes05xDamage
+:takes05xDamage rdf:type owl:ObjectProperty ;
+                rdfs:subPropertyOf :StrongAgainst .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#takes2xDamage
+:takes2xDamage rdf:type owl:ObjectProperty ;
+               rdfs:subPropertyOf :weakAgainst .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#takes4xDamage
+:takes4xDamage rdf:type owl:ObjectProperty ;
+               rdfs:subPropertyOf :weakAgainst .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/EvolvesTo
+:EvolvesTo rdf:type owl:ObjectProperty ;
+           owl:inverseOf :evolvesFrom ;
+           rdfs:domain :Pokemon ;
+           rdfs:range :Pokemon .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/IsResistant
+:IsResistant rdf:type owl:ObjectProperty ;
+             rdfs:subPropertyOf :effectiveness ;
+             rdfs:domain :Pokemon ;
+             rdfs:range :Type .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/StrongAgainst
+:StrongAgainst rdf:type owl:ObjectProperty ;
+               rdfs:subPropertyOf :effectiveness ;
+               rdfs:domain :Pokemon ;
+               rdfs:range :Type .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/evolvesFrom
+:evolvesFrom rdf:type owl:ObjectProperty ;
+             rdfs:domain :Pokemon ;
+             rdfs:range :Pokemon .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/hasType
+:hasType rdf:type owl:ObjectProperty ;
+         rdfs:domain :Pokemon ;
+         rdfs:range :Type .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/weakAgainst
+:weakAgainst rdf:type owl:ObjectProperty ;
+             rdfs:subPropertyOf :effectiveness ;
+             rdfs:domain :Pokemon ;
+             rdfs:range :Type .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/base_attack
+:base_attack rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/base_defense
+:base_defense rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/base_egg_steps
+:base_egg_steps rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/base_happiness
+:base_happiness rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/base_hp
+:base_hp rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/base_special_attack
+:base_special_attack rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/base_special_defense
+:base_special_defense rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/base_speed
+:base_speed rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/base_total
+:base_total rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/catch_rate
+:catch_rate rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/experience_needed
+:experience_needed rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/height
+:height rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/jpn_name
+:jpn_name rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/male_percentage
+:male_percentage rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/name
+:name rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/pkm_title
+:pkm_title rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/poke_class
+:poke_class rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/pokedex_number
+:pokedex_number rdf:type owl:DatatypeProperty .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/weight
+:weight rdf:type owl:DatatypeProperty .
+
+
+#################################################################
 #    Classes
 #################################################################
 
-###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#Pokemon
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/Ability
+:Ability rdf:type owl:Class .
+
+
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/Pokemon
 :Pokemon rdf:type owl:Class .
 
 
-###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#PokemonLegendary
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/PokemonLegendary
 :PokemonLegendary rdf:type owl:Class ;
                   rdfs:subClassOf :Pokemon .
 
 
-###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#PokemonNormal
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/PokemonNormal
 :PokemonNormal rdf:type owl:Class ;
                rdfs:subClassOf :Pokemon .
 
 
-###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#PokemonPseudoLegendary
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/PokemonPseudoLegendary
 :PokemonPseudoLegendary rdf:type owl:Class ;
                         rdfs:subClassOf :Pokemon .
 
 
-###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#Region
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/Region
 :Region rdf:type owl:Class .
 
 
-###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#Type
+###  http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/Type
 :Type rdf:type owl:Class .
 
 
