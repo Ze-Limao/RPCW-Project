@@ -16,6 +16,7 @@
         background-position: center;
     }
 </style>
+
 <body class="bg-gray-100 min-h-screen">
     <!-- Navbar -->
     <nav class="bg-gradient-to-r from-red-600 to-red-800 text-white shadow-lg items-center">
@@ -51,22 +52,22 @@
                     <div class="flex items-center">
                         <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
                         <span class="text-gray-700 mr-1">Triples:</span>
-                        <span class="font-semibold">12,458</span>
+                        <span class="font-semibold">{{stats.triples}}</span>
                     </div>
                     <div class="flex items-center">
                         <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
                         <span class="text-gray-700 mr-1">Classes:</span>
-                        <span class="font-semibold">24</span>
+                        <span class="font-semibold">{{stats.classes}}</span>
                     </div>
                     <div class="flex items-center">
                         <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
                         <span class="text-gray-700 mr-1">Instances:</span>
-                        <span class="font-semibold">898</span>
+                        <span class="font-semibold">{{stats.instances}}</span>
                     </div>
                     <div class="flex items-center">
                         <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
                         <span class="text-gray-700 mr-1">Properties:</span>
-                        <span class="font-semibold">156</span>
+                        <span class="font-semibold">{{stats.properties}}</span>
                     </div>
                 </div>
             </div>
@@ -92,7 +93,7 @@
                         <div class="mb-4">
                             <div class="relative rounded-md shadow-sm">
                                 <input type="text" id="class-search"
-                                    class="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    class="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md sm:text-sm"
                                     placeholder="Search classes...">
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                     <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
@@ -106,54 +107,17 @@
                         </div>
 
                         <!-- Class List -->
-                        <div class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-                            <button onclick="selectClass('Pokemon')"
-                                class="w-full text-left p-3 rounded-lg bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors flex justify-between items-center">
-                                <span class="font-medium">Pokemon</span>
-                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">898</span>
+                        <div class="space-y-2 max-h-[500px] overflow-y-auto pr-1" id="class-list">
+                            {% for class_name, instances in classes.items() %}
+                            <button onclick="selectClass('{{ class_name }}')"
+                                class="w-full text-left p-3 rounded-lg hover:bg-blue-50 border border-gray-100 transition-colors flex justify-between items-center class-button {% if class_name == 'Pokemon' %}bg-blue-50{% endif %}"
+                                data-class="{{ class_name }}">
+                                <span class="font-medium">{{ class_name }}</span>
+                                <span
+                                    class="text-xs {% if class_name == 'Pokemon' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %} px-2 py-0.5 rounded-full">{{
+                                    instances|length }}</span>
                             </button>
-
-                            <button onclick="selectClass('Type')"
-                                class="w-full text-left p-3 rounded-lg hover:bg-blue-50 border border-gray-100 transition-colors flex justify-between items-center">
-                                <span class="font-medium">Type</span>
-                                <span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">18</span>
-                            </button>
-
-                            <button onclick="selectClass('Ability')"
-                                class="w-full text-left p-3 rounded-lg hover:bg-blue-50 border border-gray-100 transition-colors flex justify-between items-center">
-                                <span class="font-medium">Ability</span>
-                                <span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">267</span>
-                            </button>
-
-                            <button onclick="selectClass('Move')"
-                                class="w-full text-left p-3 rounded-lg hover:bg-blue-50 border border-gray-100 transition-colors flex justify-between items-center">
-                                <span class="font-medium">Move</span>
-                                <span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">826</span>
-                            </button>
-
-                            <button onclick="selectClass('Generation')"
-                                class="w-full text-left p-3 rounded-lg hover:bg-blue-50 border border-gray-100 transition-colors flex justify-between items-center">
-                                <span class="font-medium">Generation</span>
-                                <span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">8</span>
-                            </button>
-
-                            <button onclick="selectClass('Region')"
-                                class="w-full text-left p-3 rounded-lg hover:bg-blue-50 border border-gray-100 transition-colors flex justify-between items-center">
-                                <span class="font-medium">Region</span>
-                                <span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">8</span>
-                            </button>
-
-                            <button onclick="selectClass('Habitat')"
-                                class="w-full text-left p-3 rounded-lg hover:bg-blue-50 border border-gray-100 transition-colors flex justify-between items-center">
-                                <span class="font-medium">Habitat</span>
-                                <span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">9</span>
-                            </button>
-
-                            <button onclick="selectClass('EggGroup')"
-                                class="w-full text-left p-3 rounded-lg hover:bg-blue-50 border border-gray-100 transition-colors flex justify-between items-center">
-                                <span class="font-medium">Egg Group</span>
-                                <span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">15</span>
-                            </button>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -161,17 +125,18 @@
                 <!-- Instance Display Panel -->
                 <div class="md:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="relative">
-                        <div class="absolute inset-0 bg-gradient-to-r from-green-400 to-green-600 rounded-t-xl"></div>
+                        <div id="instance-header"
+                            class="absolute inset-0 bg-gradient-to-r from-green-400 to-green-600 rounded-t-xl"></div>
                         <div class="relative px-6 py-4 flex justify-between items-center">
-                            <h2 class="text-xl font-bold text-white">Pokemon Instances</h2>
-                            <div class="bg-white rounded-full px-2 py-1 text-xs font-medium">
-                                898 instances
+                            <h2 id="instance-title" class="text-xl font-bold text-white">Pokemon Instances</h2>
+                            <div class="bg-white rounded-full px-2 py-1 text-xs font-medium text-green-600">
+                                <span id="instance-count">{{ pokemon_list|length }}</span> instances
                             </div>
                         </div>
                         <!-- Pokeball Design Element -->
                         <div
                             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-10 h-10 bg-white rounded-full border-4 border-gray-200 flex items-center justify-center z-10">
-                            <div class="w-5 h-5 bg-green-500 rounded-full"></div>
+                            <div id="pokeball-center" class="w-5 h-5 bg-green-500 rounded-full"></div>
                         </div>
                     </div>
 
@@ -180,7 +145,7 @@
                         <div class="flex space-x-2 mb-4">
                             <div class="flex-1 relative rounded-md shadow-sm">
                                 <input type="text" id="instance-search"
-                                    class="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                                    class="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md sm:text-sm"
                                     placeholder="Search instances...">
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                     <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
@@ -191,89 +156,64 @@
                                     </svg>
                                 </div>
                             </div>
-
-                            <select id="instance-sort"
-                                class="block pl-3 pr-10 py-2 text-base border-gray-300 bg-gray-200 :outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
-                                <option value="name">Sort by Name</option>
-                                <option value="id">Sort by ID</option>
-                                <option value="type">Sort by Type</option>
-                            </select>
                         </div>
 
                         <!-- Instance Grid -->
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-1">
+                        <div id="instance-grid"
+                            class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-1">
+                            <!-- Default view: Pokemon instances -->
                             {% for p in pokemon_list %}
-                            <a href="/pokemon/{{ p.id }}" class="block">
-                            <div
-                                class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                            <a href="/pokemon/{{ p.pokedex_number }}" class="block pokemon-instance">
                                 <div
-                                    class="h-20 bg-gradient-to-r from-gray-100 to-gray-300 flex items-center justify-center">
-                                    <img src="{{ p.icon }}" alt="{{ p.name }}"
-                                        class="h-16 w-16 object-contain drop-shadow-lg">
+                                    class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                                    <div
+                                        class="h-20 bg-gradient-to-r from-gray-100 to-gray-300 flex items-center justify-center">
+                                        <img src="https://img.pokemondb.net/sprites/home/normal/{{p.name}}.png"
+                                            alt="{{ p.name }}" class="h-16 w-16 object-contain drop-shadow-lg">
+                                    </div>
+                                    <div class="p-2 text-center">
+                                        <h3 class="font-medium">{{ p.name }}</h3>
+                                        <p class="text-xs text-gray-500">#{{ p.pokedex_number }}</p>
+                                    </div>
                                 </div>
-                                <div class="p-2 text-center">
-                                    <h3 class="font-medium">{{ p.name }}</h3>
-                                    <p class="text-xs text-gray-500">#{{ p.id }}</p>
-                                </div>
-                            </div>
                             </a>
+                            {% endfor %}
+
+                            <!-- Other class instances (hidden by default) -->
+                            {% for class_name, instances in classes.items() %}
+                            {% if class_name != 'Pokemon' %}
+                            <div class="hidden class-instances" data-class="{{ class_name }}">
+                                    {% for instance in instances %}
+                                    <div
+                                        class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                                        <div
+                                            class="h-20 bg-gradient-to-r from-gray-100 to-gray-300 flex items-center justify-center">
+                                            <div class="h-16 w-16 flex items-center justify-center">
+                                                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                                                    </path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="p-2 text-center">
+                                            <h3 class="font-medium">{{ instance }}</h3>
+                                            <p class="text-xs text-gray-500">{{ class_name }}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                            </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-
-        <script>
-            // Toggle SPARQL section
-            document.getElementById('toggleSparql').addEventListener('click', function () {
-                const sparqlSection = document.getElementById('sparqlSection');
-                const toggleButton = document.getElementById('toggleSparql');
-
-                if (sparqlSection.classList.contains('hidden')) {
-                    sparqlSection.classList.remove('hidden');
-                    toggleButton.querySelector('span').textContent = 'Hide SPARQL Query';
-                } else {
-                    sparqlSection.classList.add('hidden');
-                    toggleButton.querySelector('span').textContent = 'Show SPARQL Query';
-                }
-            });
-
-            // Select class function
-            function selectClass(className) {
-                // Reset all class buttons
-                const classButtons = document.querySelectorAll('[onclick^="selectClass"]');
-                classButtons.forEach(button => {
-                    button.classList.remove('bg-blue-50');
-                    button.classList.add('hover:bg-blue-50');
-                    const badge = button.querySelector('span:last-child');
-                    badge.classList.remove('bg-blue-100', 'text-blue-800');
-                    badge.classList.add('bg-gray-100', 'text-gray-800');
-                });
-
-                // Highlight selected class
-                const selectedButton = document.querySelector(`[onclick="selectClass('${className}')"]`);
-                selectedButton.classList.add('bg-blue-50');
-                selectedButton.classList.remove('hover:bg-blue-50');
-                const badge = selectedButton.querySelector('span:last-child');
-                badge.classList.add('bg-blue-100', 'text-blue-800');
-                badge.classList.remove('bg-gray-100', 'text-gray-800');
-
-                // Update instance panel title
-                const instanceTitle = document.querySelector('.md\\:col-span-2 h2');
-                instanceTitle.textContent = `${className} Instances`;
-
-                // In a real application, you would load the instances for the selected class here
-                console.log(`Loading instances for class: ${className}`);
-            }
-
-            // Run query button (just for demonstration)
-            document.getElementById('runQuery').addEventListener('click', function () {
-                alert('Query execution would happen here in a real application.');
-            });
-        </script>
     </div>
+
     <!-- Footer -->
     <footer class="bg-gray-800 text-white mt-12 py-6">
         <div class="container mx-auto px-4 text-center">
@@ -281,6 +221,137 @@
             <p class="text-gray-400 text-sm mt-2">A tool for exploring and generating Pokemon data relationships</p>
         </div>
     </footer>
+
+    <script>
+        // Class search functionality
+        document.getElementById('class-search').addEventListener('input', function (e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const classButtons = document.querySelectorAll('.class-button');
+
+            classButtons.forEach(button => {
+                const className = button.getAttribute('data-class').toLowerCase();
+                if (className.includes(searchTerm)) {
+                    button.style.display = 'flex';
+                } else {
+                    button.style.display = 'none';
+                }
+            });
+        });
+
+        // Instance search functionality
+        document.getElementById('instance-search').addEventListener('input', function (e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const activeClass = document.querySelector('.class-button.bg-blue-50').getAttribute('data-class');
+
+            if (activeClass === 'Pokemon') {
+                // Search in Pokemon instances
+                const pokemonInstances = document.querySelectorAll('.pokemon-instance');
+                pokemonInstances.forEach(instance => {
+                    const name = instance.querySelector('h3').textContent.toLowerCase();
+                    const id = instance.querySelector('p').textContent.toLowerCase();
+                    if (name.includes(searchTerm) || id.includes(searchTerm)) {
+                        instance.style.display = 'block';
+                    } else {
+                        instance.style.display = 'none';
+                    }
+                });
+            } else {
+                // Search in other class instances
+                const instancesContainer = document.querySelector(`.class-instances[data-class="${activeClass}"]`);
+                const instances = instancesContainer.querySelectorAll('div.bg-white');
+
+                instances.forEach(instance => {
+                    const name = instance.querySelector('h3').textContent.toLowerCase();
+                    if (name.includes(searchTerm)) {
+                        instance.style.display = 'block';
+                    } else {
+                        instance.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        // Select class function
+        function selectClass(className) {
+            // Reset all class buttons
+            const classButtons = document.querySelectorAll('.class-button');
+            classButtons.forEach(button => {
+                button.classList.remove('bg-blue-50');
+                button.classList.add('hover:bg-blue-50');
+                const badge = button.querySelector('span:last-child');
+                badge.classList.remove('bg-blue-100', 'text-blue-800');
+                badge.classList.add('bg-gray-100', 'text-gray-800');
+            });
+
+            // Highlight selected class
+            const selectedButton = document.querySelector(`.class-button[data-class="${className}"]`);
+            selectedButton.classList.add('bg-blue-50');
+            selectedButton.classList.remove('hover:bg-blue-50');
+            const badge = selectedButton.querySelector('span:last-child');
+            badge.classList.add('bg-blue-100', 'text-blue-800');
+            badge.classList.remove('bg-gray-100', 'text-gray-800');
+
+            // Update instance panel title and count
+            document.getElementById('instance-title').textContent = `${className} Instances`;
+
+            // Update header and pokeball colors based on class
+            const colorMap = {
+                'Pokemon': { header: 'from-green-400 to-green-600', pokeball: 'bg-green-500', text: 'text-green-600' },
+                'Type': { header: 'from-red-400 to-red-600', pokeball: 'bg-red-500', text: 'text-red-600' },
+                'Move': { header: 'from-blue-400 to-blue-600', pokeball: 'bg-blue-500', text: 'text-blue-600' },
+                'Ability': { header: 'from-purple-400 to-purple-600', pokeball: 'bg-purple-500', text: 'text-purple-600' },
+                'Generation': { header: 'from-yellow-400 to-yellow-600', pokeball: 'bg-yellow-500', text: 'text-yellow-600' },
+                'Region': { header: 'from-indigo-400 to-indigo-600', pokeball: 'bg-indigo-500', text: 'text-indigo-600' }
+            };
+
+            const colors = colorMap[className] || { header: 'from-gray-400 to-gray-600', pokeball: 'bg-gray-500', text: 'text-gray-600' };
+
+            // Update header gradient
+            const headerElement = document.getElementById('instance-header');
+            headerElement.className = `absolute inset-0 bg-gradient-to-r ${colors.header} rounded-t-xl`;
+
+            // Update pokeball center color
+            const pokeballCenter = document.getElementById('pokeball-center');
+            pokeballCenter.className = `w-5 h-5 ${colors.pokeball} rounded-full`;
+
+            // Update instance count color
+            const instanceCountElement = document.querySelector('.bg-white.rounded-full');
+            instanceCountElement.className = `bg-white rounded-full px-2 py-1 text-xs font-medium ${colors.text}`;
+
+            // Show instances for the selected class
+            if (className === 'Pokemon') {
+                // Show Pokemon instances
+                document.querySelectorAll('.pokemon-instance').forEach(el => el.style.display = 'block');
+                document.querySelectorAll('.class-instances').forEach(el => el.style.display = 'none');
+                document.getElementById('instance-count').textContent = document.querySelectorAll('.pokemon-instance').length;
+            } else {
+                // Hide Pokemon instances, show selected class instances
+                document.querySelectorAll('.pokemon-instance').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.class-instances').forEach(el => el.style.display = 'none');
+
+                const instancesContainer = document.querySelector(`.class-instances[data-class="${className}"]`);
+                if (instancesContainer) {
+                    instancesContainer.style.display = 'grid';
+                    instancesContainer.className = 'grid grid-cols-2 sm:grid-cols-3 gap-3 class-instances';
+                    document.getElementById('instance-count').textContent = instancesContainer.querySelectorAll('div.bg-white').length;
+                } else {
+                    document.getElementById('instance-count').textContent = '0';
+                }
+            }
+
+            // Reset search
+            document.getElementById('instance-search').value = '';
+        }
+
+        // Initialize with Pokemon class selected
+        document.addEventListener('DOMContentLoaded', function () {
+            // Select Pokemon by default if available
+            const pokemonButton = document.querySelector('.class-button[data-class="Pokemon"]');
+            if (pokemonButton) {
+                selectClass('Pokemon');
+            }
+        });
+    </script>
 </body>
 
 </html>

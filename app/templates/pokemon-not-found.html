@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Not Found - Pokéntology</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">    
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[70vh]">
+        <!-- Pokemon Not Found Card -->
+        <div class="max-w-md mx-auto bg-gray-800 border border-gray-700 rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300">
+            <!-- Pokemon Header with Curved Background -->
+            <div class="relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-red-600 to-red-800 rounded-t-xl"></div>
+                <div class="relative px-6 py-8 flex justify-center">
+                    <img src="https://img.pokemondb.net/sprites/home/normal/psyduck.png" alt="Confused Pokemon" class="w-40 h-40 object-contain drop-shadow-lg">
+                </div>
+                <!-- Pokeball Design Element -->
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-16 h-16 bg-white rounded-full border-4 border-gray-700 flex items-center justify-center">
+                    <div class="w-8 h-8 bg-red-600 rounded-full"></div>
+                </div>
+            </div>
+            
+            <!-- Error Info -->
+            <div class="px-6 pt-10 pb-6 text-center">
+                <h2 class="text-3xl font-bold text-center text-gray-100 mb-2">Pokemon Not Found!</h2>
+                <p class="text-gray-400 mb-6">The Pokemon you're looking for seems to have fled into the tall grass.</p>
+                
+                <div class="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-3">
+                    <a href="/explore" class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Explore Pokemon
+                    </a>
+                    <a href="/" class="cursor-pointer bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        Return Home
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error Details -->
+        <div class="mt-8 max-w-md mx-auto bg-gray-800 border border-gray-700 rounded-lg p-4  transform hover:scale-105 transition-transform duration-300">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-300">Error Details</h3>
+                    <div class="mt-2 text-sm text-gray-400">
+                        <p>The Pokemon ID you requested doesn't exist in our Pokedex. Check the ID and try again, or browse all Pokemon in the Explore section.</p>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex space-x-4">
+                            <span class="inline-flex items-center text-sm">
+                                <span class="text-gray-500">Error Code:</span>
+                                <span class="ml-1 text-gray-400">404</span>
+                            </span>
+                            <span class="inline-flex items-center text-sm">
+                                <span class="text-gray-500">Requested ID:</span>
+                                <span class="ml-1 text-gray-400" id="requested-id">Unknown</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700 py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400">© 2025 Pokéntology</p>
+            <p class="text-gray-500 text-sm mt-2">A tool for exploring and generating Pokemon data relationships</p>
+        </div>
+    </footer>
+
+    <script>
+        // Extract the requested Pokemon ID from the URL if available
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            
+            if (id) {
+                document.getElementById('requested-id').textContent = id;
+            }
+        });
+    </script>
+</body>
+</html>

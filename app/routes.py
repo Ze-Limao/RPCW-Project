@@ -7,29 +7,40 @@ from rdflib.namespace import RDF
 
 main = Blueprint("main", __name__)
 
+prefix = "<http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>"
 
 @main.route('/')
 def index():
     return render_template('home.html')
 
-@main.route('/pokemon/<pokemon_id>')
-def pokemon_detail(pokemon_id):
-    # In the real app API request to get the pokemon data
-    pokemon = {
-        "name": "squirtle",
-        "id": "0007",
-        "type": "water",
-        "hp": 50,
-        "attack": 20,
-        "defense": 15,
-        "special_attack": 25,
-        "special_defense": 25,
-        "speed": 20,
-        "height": 0.6,
-        "weight": 9.0,
-        "icon": "https://img.pokemondb.net/sprites/home/normal/squirtle.png",
-    }
-    return render_template('pokemon.html', pokemon=pokemon)
+@main.route('/pokemon/<pokedex_number>')
+def pokemon_detail(pokedex_number):
+    # SPARQL query to get all properties of the Pokémon
+    query = f"""
+    PREFIX : {prefix}
+    SELECT ?property ?value
+    WHERE {{
+        ?pokemon a :Pokemon ;
+            :pokedex_number {pokedex_number} ;
+            ?property ?value .
+    }}
+    """
+    result = sparql_get_query(query)
+
+    if result['results']['bindings']:
+        linhas = result['results']['bindings']
+        pokemon = {}
+        for linha in linhas:
+            property_name = linha['property']['value'].split("#")[-1]
+            if property_name == "hasType":
+                if "hasType" not in pokemon:
+                    pokemon["hasType"] = []
+                pokemon["hasType"].append(linha['value']['value'].split("#")[-1])
+            else:
+                pokemon[property_name] = linha['value']['value'].split("#")[-1]
+        return render_template('pokemon.html', pokemon=pokemon), 200
+    else:
+        return render_template('pokemon-not-found.html'), 404
 
 @main.route('/sparql')
 def sparql():
@@ -41,117 +52,61 @@ def generate_ontology():
 
 @main.route('/explore')
 def explore():
-    # Sample data for the explore page
-    pokemon_list = [
-        {
-            "name": "bulbasaur",
-            "id": "0001",
-            "type": "grass",
-            "icon": "https://img.pokemondb.net/sprites/home/normal/bulbasaur.png",
-        },
-        {
-            "name": "charmander",
-            "id": "0004",
-            "type": "fire",
-            "icon": "https://img.pokemondb.net/sprites/home/normal/charmander.png",
-        },
-        {
-            "name": "squirtle",
-            "id": "0007",
-            "type": "water",
-            "icon": "https://img.pokemondb.net/sprites/home/normal/squirtle.png",
-        },
-        {
-            "name": "pikachu",
-            "id": "0025",
-            "type": "electric",
-            "icon": "https://img.pokemondb.net/sprites/home/normal/pikachu.png",
+    # SPARQL query to get name and pokedex number for all Pokémon instances
+    query_pokemon = f"""
+    PREFIX : {prefix}
+    SELECT ?name ?pokedex_number
+    WHERE {{
+        ?pokemon a :Pokemon ;
+            :name ?name ;
+            :pokedex_number ?pokedex_number .
+    }} ORDER BY ?pokedex_number
+    """
+
+    result = sparql_get_query(query_pokemon)
+    pokemon_list = []
+    for row in result['results']['bindings']:
+        pokemon = {
+            "name": row['name']['value'],
+            "pokedex_number": row['pokedex_number']['value']
         }
-    ]
-    
-    # Sample ontology data - in a real application, this would come from SPARQL queries
-    ontology_stats = {
-        "total_triples": 12458,
-        "total_classes": 24,
-        "total_instances": 898,
-        "total_properties": 156
-    }
-    
-    # Sample classes and their instances
-    ontology_classes = [
-        {
-            "name": "Pokemon",
-            "uri": "http://pokentology.org/ontology/Pokemon",
-            "instance_count": 898,
-            "instances": [
-                {"name": "Bulbasaur", "uri": "http://pokentology.org/resource/Bulbasaur"},
-                {"name": "Charmander", "uri": "http://pokentology.org/resource/Charmander"},
-                {"name": "Squirtle", "uri": "http://pokentology.org/resource/Squirtle"}
-            ]
-        },
-        {
-            "name": "Type",
-            "uri": "http://pokentology.org/ontology/Type",
-            "instance_count": 18,
-            "instances": [
-                {"name": "Water", "uri": "http://pokentology.org/resource/WaterType"},
-                {"name": "Fire", "uri": "http://pokentology.org/resource/FireType"},
-                {"name": "Grass", "uri": "http://pokentology.org/resource/GrassType"}
-            ]
-        },
-        {
-            "name": "Ability",
-            "uri": "http://pokentology.org/ontology/Ability",
-            "instance_count": 267,
-            "instances": [
-                {"name": "Overgrow", "uri": "http://pokentology.org/resource/Overgrow"},
-                {"name": "Blaze", "uri": "http://pokentology.org/resource/Blaze"},
-                {"name": "Torrent", "uri": "http://pokentology.org/resource/Torrent"}
-            ]
-        },
-        {
-            "name": "Move",
-            "uri": "http://pokentology.org/ontology/Move",
-            "instance_count": 826,
-            "instances": [
-                {"name": "Tackle", "uri": "http://pokentology.org/resource/Tackle"},
-                {"name": "Ember", "uri": "http://pokentology.org/resource/Ember"},
-                {"name": "Water Gun", "uri": "http://pokentology.org/resource/WaterGun"}
-            ]
-        },
-        {
-            "name": "Generation",
-            "uri": "http://pokentology.org/ontology/Generation",
-            "instance_count": 8,
-            "instances": [
-                {"name": "Generation I", "uri": "http://pokentology.org/resource/Generation1"},
-                {"name": "Generation II", "uri": "http://pokentology.org/resource/Generation2"},
-                {"name": "Generation III", "uri": "http://pokentology.org/resource/Generation3"}
-            ]
-        }
-    ]
-    
+        pokemon_list.append(pokemon)
+
+    ontology_stats = get_ontology_stats()
+    ontology_classes = get_ontology_classes()
+
+    # Format the classes data for the template
+    formatted_classes = {}
+    for class_name, instances in ontology_classes.items():
+        formatted_classes[class_name] = instances
+
     return render_template('explore.html', 
                           pokemon_list=pokemon_list, 
-                          ontology_stats=ontology_stats,
-                          ontology_classes=ontology_classes)
+                          stats=ontology_stats,
+                          classes=formatted_classes)
 
-
-def sparql_query(query):
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/advogados/statements")
-    sparql.setMethod('POST')
-    sparql.setQuery(query)
-    sparql.setReturnFormat(JSON)
-    return sparql.query().convert()
-
-def sparql_get_query(query):
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/advogados")
-    sparql.setMethod('GET')
-    sparql.setQuery(query)
-    sparql.setReturnFormat(JSON)
-    return sparql.query().convert()
-
-
+@main.route('/api/class-instances/<class_name>')
+def get_class_instances(class_name):
+    """API endpoint to get instances of a specific class"""
+    query = f"""
+    PREFIX : {prefix}
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    SELECT ?instance
+    WHERE {{
+        ?instance a :{class_name} .
+    }}
+    ORDER BY ?instance
+    """
+    
+    result = sparql_get_query(query)
+    instances = []
+    
+    for row in result['results']['bindings']:
+        instance_uri = row['instance']['value']
+        instance_name = instance_uri.split('#')[-1]
+        instances.append(instance_name)
+    
+    return jsonify(instances)
 
 def get_ontology_stats():
     # Query to count total triples
@@ -187,53 +142,54 @@ def get_ontology_stats():
     }
     """
     
-    # In a real application, you would execute these queries and return the results
-    # For now, we'll return sample data
+    # Execute the queries
+    triples = sparql_get_query(total_triples_query)['results']['bindings'][0]['count']['value']
+    classes = sparql_get_query(classes_query)['results']['bindings'][0]['count']['value']
+    instances = sparql_get_query(instances_query)['results']['bindings'][0]['count']['value']
+    properties = sparql_get_query(properties_query)['results']['bindings'][0]['count']['value']
+    
     return {
-        "total_triples": 12458,
-        "total_classes": 24,
-        "total_instances": 898,
-        "total_properties": 156
+        "triples": triples,
+        "classes": classes,
+        "instances": instances,
+        "properties": properties
     }
 
-# Function to get classes and their instances (would be used in a real application)
 def get_ontology_classes():
-    # Query to get all classes and count their instances
-    classes_query = """
-    SELECT ?class ?className (COUNT(DISTINCT ?instance) AS ?instanceCount)
+    query = """
+    SELECT DISTINCT ?class ?instance
     WHERE {
+        ?instance a ?class .
         ?class a <http://www.w3.org/2002/07/owl#Class> .
-        OPTIONAL {
-            ?instance a ?class
-        }
-        BIND(STRAFTER(STR(?class), "#") AS ?className)
     }
-    GROUP BY ?class ?className
-    ORDER BY DESC(?instanceCount)
+    ORDER BY ?class
     """
-    
-    # Query to get instances for a specific class
-    instances_query = """
-    SELECT ?instance ?instanceName
-    WHERE {
-        ?instance a <{class_uri}> .
-        BIND(STRAFTER(STR(?instance), "#") AS ?instanceName)
-    }
-    LIMIT 10
-    """
-    
-    # In a real application, you would execute these queries and return the results
-    # For now, we'll return sample data
-    return [
-        {
-            "name": "Pokemon",
-            "uri": "http://pokentology.org/ontology/Pokemon",
-            "instance_count": 898,
-            "instances": [
-                {"name": "Bulbasaur", "uri": "http://pokentology.org/resource/Bulbasaur"},
-                {"name": "Charmander", "uri": "http://pokentology.org/resource/Charmander"},
-                {"name": "Squirtle", "uri": "http://pokentology.org/resource/Squirtle"}
-            ]
-        },
-        # Other classes would be here
-    ]
+
+    result = sparql_get_query(query)
+    class_dict = {}
+
+    for row in result['results']['bindings']:
+        class_name = row['class']['value'].split("#")[-1]
+        instance_name = row['instance']['value'].split("#")[-1]
+
+        if class_name not in class_dict:
+            class_dict[class_name] = []
+
+        class_dict[class_name].append(instance_name)
+
+    return class_dict
+
+
+def sparql_query(query):
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/pokentology/statements")
+    sparql.setMethod('POST')
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    return sparql.query().convert()
+
+def sparql_get_query(query):
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/pokentology")
+    sparql.setMethod('GET')
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    return sparql.query().convert()

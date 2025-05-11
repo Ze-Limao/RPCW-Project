@@ -16,6 +16,7 @@
         background-position: center;
     }
 </style>
+
 <body class="bg-gray-100 min-h-screen">
     <!-- Navbar -->
     <nav class="bg-gradient-to-r from-red-600 to-red-800 text-white shadow-lg items-center">
@@ -49,7 +50,7 @@
             <div class="relative">
                 <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-t-xl"></div>
                 <div class="relative px-6 py-8 flex justify-center">
-                    <img src="{{pokemon.icon}}" alt="{{ pokemon.name }}"
+                    <img src="https://img.pokemondb.net/sprites/home/normal/{{pokemon.name}}.png" alt=" "
                         class="w-40 h-40 object-contain drop-shadow-lg">
                 </div>
                 <!-- Pokeball Design Element -->
@@ -62,28 +63,57 @@
             <!-- Pokemon Info -->
             <div class="px-6 pt-10 pb-6">
                 <div class="flex justify-between items-center">
-                    <button
-                        class="cursor-pointer p-2  py-1 px-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors duration-300">
-                        < Previous</button>
+                    <a href="/pokemon/{{ pokemon.pokedex_number|int - 1 }}"
+                        class="cursor-pointer p-2 py-1 px-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors duration-300">
+                        < Previous</a>
                             <h2 class="text-3xl font-bold text-center text-gray-800 capitalize mb-2">{{ pokemon.name }}
-                                #{{ pokemon.id }}</h2>
-                            <button
-                                class="cursor-pointer p-2  py-1 px-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors duration-300">Next
-                                ></button>
+                                #{{ pokemon.pokedex_number }}</h2>
+                            <a href="/pokemon/{{ pokemon.pokedex_number|int + 1 }}"
+                                class="cursor-pointer p-2 py-1 px-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors duration-300">Next
+                                ></a>
 
                 </div>
                 <div class="flex justify-center mb-4">
-                    {% if pokemon.type == 'water' %}
-                    <span class="px-4 py-1 rounded-full text-sm bg-blue-500 text-white">{{ pokemon.type }}</span>
-                    {% elif pokemon.type == 'fire' %}
-                    <span class="px-4 py-1 rounded-full text-sm bg-red-500 text-white">{{ pokemon.type }}</span>
-                    {% elif pokemon.type == 'grass' %}
-                    <span class="px-4 py-1 rounded-full text-sm bg-green-500 text-white">{{ pokemon.type }}</span>
-                    {% elif pokemon.type == 'electric' %}
-                    <span class="px-4 py-1 rounded-full text-sm bg-yellow-500 text-white">{{ pokemon.type }}</span>
+                    {% for type in pokemon.hasType %}
+                    {% if type == 'water' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-blue-500 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'fire' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-red-500 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'grass' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-green-500 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'electric' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-yellow-500 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'bug' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-green-700 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'normal' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-gray-300 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'fighting' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-red-700 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'psychic' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-pink-500 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'rock' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-yellow-700 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'ghost' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-purple-500 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'dark' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-gray-800 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'fairy' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-pink-300 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'steel' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-gray-400 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'ice' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-blue-200 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'flying' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-blue-300 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'ground' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-brown-500 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'poison' %}
+                    <span class="px-4 py-1 rounded-full text-sm bg-purple-700 text-white mx-1">{{ type }}</span>
+                    {% elif type == 'dragon' %}
                     {% else %}
-                    <span class="px-4 py-1 rounded-full text-sm bg-gray-500 text-white">{{ pokemon.type }}</span>
+                    <span class="px-4 py-1 rounded-full text-sm bg-gray-500 text-white mx-1">{{ type }}</span>
                     {% endif %}
+                    {% endfor %}
                 </div>
 
                 <p class="text-gray-600 font-semibold">{{ pokemon.description }}</p>
@@ -114,7 +144,7 @@
                 <div id="propertiesList" class="mt-4">
                     <ul class="space-y-2">
                         {% for key, value in pokemon.items() %}
-                        {% if key not in ['icon', 'id', 'name', 'type', 'description'] %}
+                        {% if key not in ['icon', 'id', 'name', 'hasType', 'description'] %}
                         <li class="flex justify-between py-1">
                             <span class="text-gray-700 capitalize">{{ key.replace('_', ' ') }}</span>
                             <span class="font-medium">{{ value }}</span>
