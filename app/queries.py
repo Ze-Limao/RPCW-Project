@@ -1,67 +1,145 @@
-import requests
-from rdflib import Graph
+from SPARQLWrapper import SPARQLWrapper, JSON
 
-def clear_repository(repository_url, repository_name):
-    # Construct the repository endpoint URL
-    endpoint_url = f"{repository_url}/repositories/{repository_name}/statements"
+prefix = "<http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>"
 
-    # Send a DELETE request to clear the repository
-    response = requests.delete(endpoint_url)
-
-    # Check the response status
-    if response.status_code == 204:
-        print("Repository successfully cleared.")
-    else:
-        print(f"Failed to clear repository. Status code: {response.status_code}")
-        print(f"Response: {response.text}")
-
-def ontology_exists(repository_url, repository_name, ontology_uri):
-    # Construct the repository endpoint URL for querying
-    endpoint_url = f"{repository_url}/repositories/{repository_name}"
-
-    # SPARQL query to check if the ontology exists
+def get_pokemon_by_name(pokedex_number):
     query = f"""
-    ASK WHERE {{
-        <{ontology_uri}> ?p ?o .
+    PREFIX : {prefix}
+    
+    SELECT ?property ?value
+    WHERE {{
+        ?pokemon a :Pokemon ;
+                 :pokedex_number {pokedex_number} ;
+                 ?property ?value .
     }}
     """
 
-    # Send the SPARQL query to the repository
-    headers = {"Content-Type": "application/sparql-query"}
-    response = requests.post(endpoint_url, data=query, headers=headers)
+    result = sparql_get_query(query)
 
-    # Check the response status
-    if response.status_code == 200:
-        return response.json().get("boolean", False)
-    else:
-        print(f"Failed to check ontology existence. Status code: {response.status_code}")
-        print(f"Response: {response.text}")
-        return False
+    pokemon = {
+        "relations": {}
+    }
 
-def save_ontology_to_graphdb(ontology_file, repository_url, repository_name):
-    # Load the ontology into an RDFLib graph
-    graph = Graph()
-    graph.parse(ontology_file, format="turtle")
+    if result['results']['bindings']:
+        for linha in result['results']['bindings']:
+            property_uri = linha['property']['value']
+            property_name = property_uri.split("#")[-1] if "#" in property_uri else property_uri.split("/")[-1]
+            value = linha['value']['value']
+            is_literal = linha['value']['type'] == "literal"
 
-    # Serialize the graph to a string in Turtle format
-    ontology_data = graph.serialize(format="turtle")
+            clean_value = value.split("#")[-1] if "#" in value else value.split("/")[-1]
 
-    # Construct the repository endpoint URL
-    endpoint_url = f"{repository_url}/repositories/{repository_name}/statements"
+            if is_literal:
+                pokemon[property_name] = clean_value
+            else:
+                if property_name not in pokemon["relations"]:
+                    pokemon["relations"][property_name] = []
+                pokemon["relations"][property_name].append(clean_value)
 
-    # Send the ontology data to the repository
-    headers = {"Content-Type": "text/turtle"}
-    response = requests.post(endpoint_url, data=ontology_data, headers=headers)
+    return pokemon
 
-    # Check the response status
-    if response.status_code == 204:
-        print("Ontology successfully saved to the GraphDB repository.")
-    else:
-        print(f"Failed to save ontology. Status code: {response.status_code}")
-        print(f"Response: {response.text}")
+def get_pokemons():
+    query_pokemon = f"""
+    PREFIX : {prefix}
+    SELECT ?name ?pokedex_number
+    WHERE {{
+        ?pokemon a :Pokemon ;
+            :name ?name ;
+            :pokedex_number ?pokedex_number .
+    }} ORDER BY ?pokedex_number
+    """
+    result = sparql_get_query(query_pokemon)
+    pokemon_list = []
+    for row in result['results']['bindings']:
+        pokemon = {
+            "name": row['name']['value'],
+            "pokedex_number": row['pokedex_number']['value']
+        }
+        pokemon_list.append(pokemon)
+    return pokemon_list
 
-ontology_file = "../Ontology/pokemon_povoada.ttl"
-repository_url = "http://localhost:7200"
-repository_name = "pokentology"
+def get_ontology_classes():
+    query = """
+    SELECT DISTINCT ?class ?instance
+    WHERE {
+        ?instance a ?class .
+        ?class a <http://www.w3.org/2002/07/owl#Class> .
+    }
+    ORDER BY ?class
+    """
 
-save_ontology_to_graphdb(ontology_file, repository_url, repository_name)
+    result = sparql_get_query(query)
+    class_dict = {}
+
+    for row in result['results']['bindings']:
+        class_name = row['class']['value'].split("#")[-1]
+        instance_name = row['instance']['value'].split("#")[-1]
+
+        if class_name not in class_dict:
+            class_dict[class_name] = []
+
+        class_dict[class_name].append(instance_name)
+
+    return class_dict
+
+def get_ontology_stats():
+    # Query to count total triples
+    total_triples_query = """
+    SELECT (COUNT(*) AS ?count) 
+    WHERE { ?s ?p ?o }
+    """
+    
+    # Query to count classes
+    classes_query = """
+    SELECT (COUNT(DISTINCT ?class) AS ?count) 
+    WHERE { 
+        ?class a <http://www.w3.org/2002/07/owl#Class> 
+    }
+    """
+    
+    # Query to count instances
+    instances_query = """
+    SELECT (COUNT(DISTINCT ?instance) AS ?count) 
+    WHERE { 
+        ?instance a ?class .
+        ?class a <http://www.w3.org/2002/07/owl#Class> 
+    }
+    """
+    
+    # Query to count properties
+    properties_query = """
+    SELECT (COUNT(DISTINCT ?property) AS ?count) 
+    WHERE { 
+        { ?property a <http://www.w3.org/2002/07/owl#ObjectProperty> }
+        UNION
+        { ?property a <http://www.w3.org/2002/07/owl#DatatypeProperty> }
+    }
+    """
+    
+    # Execute the queries
+    triples = sparql_get_query(total_triples_query)['results']['bindings'][0]['count']['value']
+    classes = sparql_get_query(classes_query)['results']['bindings'][0]['count']['value']
+    instances = sparql_get_query(instances_query)['results']['bindings'][0]['count']['value']
+    properties = sparql_get_query(properties_query)['results']['bindings'][0]['count']['value']
+    
+    return {
+        "triples": triples,
+        "classes": classes,
+        "instances": instances,
+        "properties": properties
+    }
+
+
+def sparql_query(query):
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/pokentology/statements")
+    sparql.setMethod('POST')
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    return sparql.query().convert()
+
+def sparql_get_query(query):
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/pokentology")
+    sparql.setMethod('GET')
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    return sparql.query().convert()

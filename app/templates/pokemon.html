@@ -41,11 +41,32 @@
         </div>
     </nav>
 
+    {% set type_colors = {
+    'water': 'bg-blue-500',
+    'fire': 'bg-red-500',
+    'grass': 'bg-green-500',
+    'electric': 'bg-yellow-500',
+    'bug': 'bg-green-700',
+    'normal': 'bg-gray-300',
+    'fighting': 'bg-red-700',
+    'psychic': 'bg-pink-500',
+    'rock': 'bg-yellow-700',
+    'ghost': 'bg-purple-500',
+    'dark': 'bg-gray-800',
+    'fairy': 'bg-pink-300',
+    'steel': 'bg-gray-400',
+    'ice': 'bg-blue-200',
+    'flying': 'bg-blue-300',
+    'ground': 'bg-amber-700',
+    'poison': 'bg-purple-700',
+    'dragon': 'bg-indigo-700'
+    } %}
+
     <!-- Main Content -->
     <div class="container mx-auto mt-8 relative">
         <!-- Pokemon Card -->
         <div
-            class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-4xl transform hover:scale-105 transition-transform duration-300">
+            class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-4xl transform hover:scale-101 transition-transform duration-300">
             <!-- Pokemon Header with Curved Background -->
             <div class="relative">
                 <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-t-xl"></div>
@@ -74,7 +95,7 @@
 
                 </div>
                 <div class="flex justify-center mb-4">
-                    {% for type in pokemon.hasType %}
+                    {% for type in pokemon.relations.hasType %}
                     {% if type == 'water' %}
                     <span class="px-4 py-1 rounded-full text-sm bg-blue-500 text-white mx-1">{{ type }}</span>
                     {% elif type == 'fire' %}
@@ -116,7 +137,6 @@
                     {% endfor %}
                 </div>
 
-                <p class="text-gray-600 font-semibold">{{ pokemon.description }}</p>
                 <!-- Toggle Buttons -->
                 <div class="flex space-x-2 my-4">
                     <button id="propertiesBtn" onclick="showProperties()"
@@ -144,7 +164,7 @@
                 <div id="propertiesList" class="mt-4">
                     <ul class="space-y-2">
                         {% for key, value in pokemon.items() %}
-                        {% if key not in ['icon', 'id', 'name', 'hasType', 'description'] %}
+                        {% if key not in ['name', 'relations'] %}
                         <li class="flex justify-between py-1">
                             <span class="text-gray-700 capitalize">{{ key.replace('_', ' ') }}</span>
                             <span class="font-medium">{{ value }}</span>
@@ -158,30 +178,22 @@
                 <!-- Relationships List (Hidden by default) -->
                 <div id="relationshipsList" class="mt-4 hidden">
                     <ul class="space-y-2">
+                        {% for key, value in pokemon.relations.items() %}
+                        {% if key not in ['hasType', 'normalDamage', 'type', 'effectiveness'] %}
                         <li class="flex justify-between py-1">
-                            <span class="text-gray-700">Evolves To</span>
-                            <a href="#" class="text-blue-600 hover:underline">Wartortle</a>
+                            <span class="text-gray-700 capitalize">{{ key.replace('_', ' ') }}</span>
+                            <div>
+                            {%for val in value %}
+                            {% set color = type_colors.get(val | lower, 'bg-gray-500') %}
+                            <span class="px-4 py-1 rounded-full text-sm {{color}} text-white mx-1">
+                                {{ val }}
+                            </span>
+                            {% endfor %}
+                            </div>
                         </li>
                         <hr class="border-t border-gray-300">
-                        <li class="flex justify-between">
-                            <span class="text-gray-700">Evolves From</span>
-                            <span class="text-gray-400 italic">None</span>
-                        </li>
-                        <li class="flex justify-between">
-                            <span class="text-gray-700">Weak Against</span>
-                            <div class="flex space-x-1">
-                                <span class="px-2 py-0.5 bg-yellow-500 text-white text-xs rounded-full">Electric</span>
-                                <span class="px-2 py-0.5 bg-green-500 text-white text-xs rounded-full">Grass</span>
-                            </div>
-                        </li>
-                        <li class="flex justify-between">
-                            <span class="text-gray-700">Strong Against</span>
-                            <div class="flex space-x-1">
-                                <span class="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">Fire</span>
-                                <span class="px-2 py-0.5 bg-yellow-700 text-white text-xs rounded-full">Ground</span>
-                                <span class="px-2 py-0.5 bg-gray-500 text-white text-xs rounded-full">Rock</span>
-                            </div>
-                        </li>
+                        {% endif %}
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
