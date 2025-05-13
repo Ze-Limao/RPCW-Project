@@ -62,7 +62,7 @@
             <div class="flex items-center">
                 <div id="connection-status" class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
                 <span class="text-sm text-gray-600">Connected to:</span>
-                <span class="text-sm font-medium text-gray-800 ml-2" id="endpoint-url">http://localhost:7200/repositories/pokentology</span>
+                <span class="text-sm font-medium text-gray-800 ml-2" id="endpoint-url">http://localhost:7200/repositories/{{ repository_info.repository_name }}</span>
             </div>
         </div>
         
@@ -335,11 +335,11 @@ ORDER BY ?generation</pre>
             <div class="space-y-4">
                 <div>
                     <label for="endpoint-input" class="block text-sm font-medium text-gray-700 mb-1">Endpoint URL</label>
-                    <input type="text" id="endpoint-input" class="w-full bg-white border border-gray-300 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500" value="http://localhost:7200/repositories/pokentology">
+                    <input type="text" id="endpoint-input" class="w-full bg-white border border-gray-300 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500" value="http://localhost:7200/repositories/{{ repository_info.repository_name }}">
                 </div>
                 <div>
                     <label for="repository-input" class="block text-sm font-medium text-gray-700 mb-1">Repository Name</label>
-                    <input type="text" id="repository-input" class="w-full bg-white border border-gray-300 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500" value="pokentology">
+                    <input type="text" id="repository-input" class="w-full bg-white border border-gray-300 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500" value="{{ repository_info.repository_name }}">
                 </div>
                 <div class="flex justify-end space-x-3 mt-6">
                     <button id="cancel-endpoint" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md text-sm font-medium">
@@ -601,7 +601,7 @@ ORDER BY ?generation`);
             document.getElementById('results-loading').classList.remove('hidden');
             
             // Get endpoint from localStorage or use default
-            const endpoint = localStorage.getItem('sparqlEndpoint') || 'http://localhost:7200/repositories/pokentology';
+            const endpoint = localStorage.getItem('sparqlEndpoint') || 'http://localhost:7200/repositories/{{ repository_info.repository_name }}';
             const format = document.getElementById('queryFormat').value;
             
             // Update connection status to "connecting"

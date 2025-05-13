@@ -16,7 +16,8 @@
         background-position: center;
     }
 </style>
-<body class="bg-gray-100 min-h-screen">
+
+<body class="bg-gray-100 min-h-screen flex flex-col">
     <!-- Navbar -->
     <nav class="bg-gradient-to-r from-red-600 to-red-800 text-white shadow-lg items-center">
         <div class="container mx-auto flex p-2 justify-between items-center">
@@ -41,7 +42,7 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-4 py-8 flex-grow">
         <div class="max-w-4xl mx-auto">
             <h1 class="text-3xl font-bold text-gray-800 mb-6">Generate Pokemon Ontology</h1>
 
@@ -55,21 +56,12 @@
                 <div class="p-6">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">Ontology Generation Options</h2>
 
-                    <form action="/generate" method="post">
-                        <!-- Advanced Options -->
+                    <form method="POST" action="/api/generate">
                         <div>
                             <div class="mt-4 space-y-4">
                                 <div>
-                                    <label for="namespace" class="block text-sm font-medium text-gray-700 mb-2">Custom
-                                        Namespace</label>
-                                    <input type="text" id="namespace" name="namespace"
-                                        class="mt-1 block w-full border-gray-300 rounded-md p-2 shadow-sm focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
-                                        placeholder="http://localhost:7200/repositories/pokentology/"
-                                        value="{{ request.form.get('namespace', 'http://localhost:7200/repositories/pokentology/') }}">
-                                </div>
-                                <div>
-                                    <label for="repository_name" class="block text-sm font-medium text-gray-700 mb-2">Repository
-                                        Name</label>
+                                    <label for="repository_name"
+                                        class="block text-sm font-medium text-gray-700 mb-2">Repository Name</label>
                                     <input type="text" id="repository_name" name="repository_name"
                                         class="mt-1 block w-full border-gray-300 rounded-md p-2 shadow-sm focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
                                         placeholder="pokentology"
@@ -81,10 +73,14 @@
                                             Format</label>
                                         <select id="format" name="format"
                                             class="mt-1 block w-42 pl-3 pr-10 py-2 text-base bg-gray-100 border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-md">
-                                            <option value="rdf" {% if request.form.get('format') == 'rdf' %}selected{% endif %}>RDF/XML</option>
-                                            <option value="turtle" {% if request.form.get('format', 'turtle') == 'turtle' %}selected{% endif %}>Turtle</option>
-                                            <option value="json-ld" {% if request.form.get('format') == 'json-ld' %}selected{% endif %}>JSON-LD</option>
-                                            <option value="n-triples" {% if request.form.get('format') == 'n-triples' %}selected{% endif %}>N-Triples</option>
+                                            <option value="rdf" {% if request.form.get('format')=='rdf' %}selected{%
+                                                endif %}>RDF/XML</option>
+                                            <option value="turtle" {% if request.form.get('format', 'turtle' )=='turtle'
+                                                %}selected{% endif %}>Turtle</option>
+                                            <option value="json-ld" {% if request.form.get('format')=='json-ld'
+                                                %}selected{% endif %}>JSON-LD</option>
+                                            <option value="n-triples" {% if request.form.get('format')=='n-triples'
+                                                %}selected{% endif %}>N-Triples</option>
                                         </select>
                                     </div>
                                     <div class="flex justify-end">
@@ -103,63 +99,69 @@
             <div class="bg-white rounded-xl shadow-md overflow-hidden mt-6">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4 items-center">
-                    <h2 class="text-xl font-semibold text-gray-800">Current Ontology</h2>
-                    <div class="flex space-x-4">
-                        <button onclick="document.getElementById('upload-form').style.display='block'"
-                            class="flex cursor-pointer items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 mr-2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-                              </svg> 
-                            Upload
-                        </button>
-                        <a href="/api/download-ontology?repository_name={{ repository_info.repository_name if repository_info else 'pokentology' }}&format={{ request.form.get('format', 'turtle') }}"
-                            class="flex cursor-pointer items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 mr-2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                              </svg>                             
-                            Download
-                        </a>
-                        <button onclick="deleteOntology()"
-                            class="flex cursor-pointer items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 mr-2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                              </svg>
-                              
-                            Delete
-                        </button>
-                    </div>
+                        <h2 class="text-xl font-semibold text-gray-800">Current Ontology</h2>
+                        <div class="flex space-x-4">
+                            <button onclick="document.getElementById('upload-form').style.display='block'"
+                                class="flex cursor-pointer items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-4 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                                </svg>
+                                Upload
+                            </button>
+                            <a href="/api/download-ontology?repository_name={{ repository_info.repository_name if repository_info else 'pokentology' }}&format={{ request.form.get('format', 'turtle') }}"
+                                class="flex cursor-pointer items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-4 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                </svg>
+                                Download
+                            </a>
+                            <button onclick="deleteOntology()"
+                                class="flex cursor-pointer items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-4 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+
+                                Delete
+                            </button>
+                        </div>
                     </div>
                     <div class="space-y-4">
                         <div>
-                            <p class="text-sm font-medium text-gray-700">Namespace:</p>
-                            <p class="text-gray-800 font-semibold">{{ repository_info.namespace if repository_info else 'Not available' }}</p>
-                        </div> 
-                        <div>
                             <p class="text-sm font-medium text-gray-700">Repository Name:</p>
-                            <p class="text-gray-800 font-semibold">{{ repository_info.repository_name if repository_info else 'Not available' }}</p>
+                            <p class="text-gray-800 font-semibold">{{ repository_info.repository_name if repository_info
+                                else 'Not available' }}</p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-700">Ontology Size:</p>
-                            <p class="text-gray-800 font-semibold">{{ repository_info.triples if repository_info else 'Not available' }} triples</p>
+                            <p class="text-gray-800 font-semibold">{{ repository_info.triples if repository_info else
+                                'Not available' }} triples</p>
                         </div>
                     </div>
-                    
+
                     <!-- Hidden upload form -->
                     <div id="upload-form" style="display: none;" class="mt-6 p-4 border border-gray-200 rounded-lg">
                         <h3 class="text-lg font-medium mb-4">Upload Ontology File</h3>
                         <form id="ontology-upload-form" enctype="multipart/form-data">
-                            <input type="hidden" name="repository_name" value="{{ repository_info.repository_name if repository_info else 'pokentology' }}">
+                            <input type="hidden" name="repository_name"
+                                value="{{ repository_info.repository_name if repository_info else 'pokentology' }}">
                             <div class="mb-4">
                                 <label for="ontology-file" class="block text-sm font-medium text-gray-700 mb-2"></label>
-                                <input type="file" id="ontology-file" name="file" accept=".rdf,.ttl,.jsonld,.nt,.xml" 
+                                <input type="file" id="ontology-file" name="file" accept=".rdf,.ttl,.jsonld,.nt,.xml"
                                     class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
                             </div>
                             <div class="flex justify-end space-x-2">
-                                <button type="button" onclick="document.getElementById('upload-form').style.display='none'" 
+                                <button type="button"
+                                    onclick="document.getElementById('upload-form').style.display='none'"
                                     class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                                     Cancel
                                 </button>
-                                <button type="button" onclick="uploadOntology()" 
+                                <button type="button" onclick="uploadOntology()"
                                     class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                                     Upload
                                 </button>
@@ -183,38 +185,15 @@
         function uploadOntology() {
             const form = document.getElementById('ontology-upload-form');
             const formData = new FormData(form);
-            
+
             fetch('/api/upload-ontology', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Ontology uploaded successfully!');
-                    location.reload();
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                alert('Error: ' + error);
-            });
-        }
-        
-        function deleteOntology() {
-            if (confirm('Are you sure you want to delete the ontology? This action cannot be undone.')) {
-                const formData = new FormData();
-                formData.append('repository_name', '{{ repository_info.repository_name if repository_info else "pokentology" }}');
-                
-                fetch('/api/delete-ontology', {
-                    method: 'POST',
-                    body: formData
-                })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Ontology deleted successfully!');
+                        alert('Ontology uploaded successfully!');
                         location.reload();
                     } else {
                         alert('Error: ' + data.error);
@@ -223,6 +202,29 @@
                 .catch(error => {
                     alert('Error: ' + error);
                 });
+        }
+
+        function deleteOntology() {
+            if (confirm('Are you sure you want to delete the ontology? This action cannot be undone.')) {
+                const formData = new FormData();
+                formData.append('repository_name', '{{ repository_info.repository_name if repository_info else "pokentology" }}');
+
+                fetch('/api/delete-ontology', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Ontology deleted successfully!');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Error: ' + error);
+                    });
             }
         }
     </script>

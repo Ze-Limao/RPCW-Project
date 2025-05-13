@@ -6,17 +6,19 @@ from rdflib import Graph, URIRef, Literal
 from rdflib.namespace import RDF
 import requests
 from app.queries import get_ontology_stats, get_ontology_classes, get_pokemon_by_name, get_pokemons
-from app.ontology import clear_repository, save_ontology_to_graphdb
+from app.ontology import clear_repository, load_ontology_to_graphdb, get_repository_info, update_ontology
 
 main = Blueprint("main", __name__)
 
+# deafault values
+ontology_base = "./Ontology/pokemon_ontology_base.ttl"
 ontology_file = "./Ontology/pokemon_povoada.ttl"
 repository_url = "http://localhost:7200"
 repository_name = "pokentology"
 
 @main.route('/')
 def index():
-    save_ontology_to_graphdb(ontology_file, repository_url, repository_name)
+    load_ontology_to_graphdb(ontology_file, repository_url, repository_name)
     return render_template('home.html')
 
 @main.route('/pokemon/<pokedex_number>')
@@ -30,18 +32,8 @@ def pokemon_detail(pokedex_number):
 
 @main.route('/sparql')
 def sparql():
-    return render_template('sparql.html')
-
-def get_repository_info():  
-    response = requests.get(f"http://localhost:7200/repositories/{repository_name}/size")
-    triples_count = response.text
-
-    result = {
-        "namespace": repository_url,
-        "repository_name": repository_name,
-        "triples": triples_count
-    }
-    return result
+    repository_info = get_repository_info()
+    return render_template('sparql.html', repository_info=repository_info)
 
 @main.route('/generate')
 def generate_ontology():
@@ -169,6 +161,7 @@ def upload_ontology():
         )
         
         if response.status_code == 204:
+            update_ontology(ontology_file, repository_url, repo_name)
             return jsonify({"success": True, "message": "Ontology uploaded successfully"})
         else:
             return jsonify({"error": f"Upload failed: {response.text}"}), 400
@@ -215,7 +208,7 @@ def download_ontology():
                 file_data,
                 mimetype=content_type,
                 as_attachment=True,
-                download_name=f"pokemon_ontology.{extension}"
+                download_name=f"{repo_name}.{extension}"
             )
         else:
             return jsonify({"error": f"Download failed: {response.text}"}), 400
@@ -234,9 +227,22 @@ def delete_ontology():
         )
         
         if response.status_code == 204:
+            clear_repository()
             return jsonify({"success": True, "message": "Ontology deleted successfully"})
         else:
             return jsonify({"error": f"Deletion failed: {response.text}"}), 400
     
     except Exception as e:
         return jsonify({"error": f"Error: {str(e)}"}), 500
+    
+
+@main.route('/api/generate', methods=['POST'])
+def generate():
+    repo_name = request.form.get('repository_name', 'pokentology')
+
+    try:
+        load_ontology_to_graphdb(ontology_base, repository_url, repo_name, True)
+        return jsonify({"success": True, "message": f"Ontology generated and loaded into repository '{repo_name}'"})
+    
+    except Exception as e:
+        return jsonify({"error": f"Ontology generation failed: {str(e)}"}), 500
