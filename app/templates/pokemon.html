@@ -72,8 +72,8 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-t-xl"></div>
                 <div class="relative px-6 py-8 flex justify-center">
                     {% if pokemon.pokedex_number is defined %}
-                    <img src="https://img.pokemondb.net/sprites/home/normal/{{ pokemon.name }}.png"
-                        alt=" " class="w-40 h-40 object-contain drop-shadow-lg">
+                    <img src="https://img.pokemondb.net/sprites/home/normal/{{ pokemon.name }}.png" alt=" "
+                        class="w-40 h-40 object-contain drop-shadow-lg">
                     {% else %}
                     <img src="{{ url_for('static', filename='images/logo.png') }}" alt=" "
                         class="w-72 h-40 object-contain drop-shadow-lg">
@@ -183,9 +183,11 @@
                             <div>
                                 {%for val in value %}
                                 {% set color = type_colors.get(val | lower, 'bg-gray-500') %}
-                                <span class="px-4 py-1 rounded-full text-sm {{color}} text-white mx-1">
-                                    {{ val }}
-                                </span>
+                                <a href="/pokemon/{{val}}">
+                                    <span class="px-4 py-1 rounded-full text-sm {{color}} text-white mx-1 hover:py-2">
+                                        {{ val }}
+                                    </span>
+                                </a>
                                 {% endfor %}
                             </div>
                         </li>
