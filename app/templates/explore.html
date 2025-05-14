@@ -158,44 +158,44 @@
                             </div>
                         </div>
 
-                        <!-- Instance Grid -->
-                        <div id="instance-grid"
-                            class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-1">
-                            <!-- Default view: Pokemon instances -->
-                            {% for p in pokemon_list %}
-                            <a href="/pokemon/{{ p.pokedex_number }}" class="block pokemon-instance">
-                                <div
-                                    class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                                    <div
-                                        class="h-20 bg-gradient-to-r from-gray-100 to-gray-300 flex items-center justify-center">
-                                        <img src="https://img.pokemondb.net/sprites/home/normal/{{p.name}}.png"
-                                            alt="{{ p.name }}" class="h-16 w-16 object-contain drop-shadow-lg">
-                                    </div>
-                                    <div class="p-2 text-center">
-                                        <h3 class="font-medium">{{ p.name }}</h3>
-                                        <p class="text-xs text-gray-500">#{{ p.pokedex_number }}</p>
-                                    </div>
-                                </div>
-                            </a>
-                            {% endfor %}
-
-                            <!-- Other class instances (hidden by default) -->
-                            {% for class_name, instances in classes.items() %}
-                            {% if class_name != 'Pokemon' %}
-                            <div class="hidden class-instances" data-class="{{ class_name }}">
-                                    {% for instance in instances %}
+                        <!-- Pokémon Grid -->
+                        <div>
+                            <div id="pokemon-grid"
+                                class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-1">
+                                {% for p in pokemon_list %}
+                                <a href="/pokemon/{{ p.name }}" class="block pokemon-instance">
                                     <div
                                         class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
                                         <div
                                             class="h-20 bg-gradient-to-r from-gray-100 to-gray-300 flex items-center justify-center">
-                                            <div class="h-16 w-16 flex items-center justify-center">
-                                                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
-                                                    </path>
-                                                </svg>
+                                            <img src="https://img.pokemondb.net/sprites/home/normal/{{p.name}}.png"
+                                                alt=" " class="h-16 w-16 object-contain drop-shadow-lg">
+                                        </div>
+                                        <div class="p-2 text-center">
+                                            <h3 class="font-medium">{{ p.name }}</h3>
+                                            <p class="text-xs text-gray-500">#{{ p.pokedex_number }}</p>
+                                        </div>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Other Classes Grid -->
+                        <div class="mt-6">
+                            <div id="other-classes-grid"
+                                class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-1">
+                                {% for class_name, instances in classes.items() %}
+                                {% if class_name != 'Pokemon' %}
+                                {% for instance in instances %}
+                                <a href="/pokemon/{{ instance }}" class="block">
+                                    <div
+                                        class="bg-white w-40 rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                                        <div
+                                            class="h-20 w-40 bg-gradient-to-r from-gray-100 to-gray-300 flex items-center justify-center">
+                                            <div class="flex items-center justify-center">
+                                                <img src="static/images/logo.png" alt=" "
+                                                    class="object-contain drop-shadow-lg">
                                             </div>
                                         </div>
                                         <div class="p-2 text-center">
@@ -203,11 +203,13 @@
                                             <p class="text-xs text-gray-500">{{ class_name }}</p>
                                         </div>
                                     </div>
-                                    {% endfor %}
+                                </a>
+                                {% endfor %}
+                                {% endif %}
+                                {% endfor %}
                             </div>
-                            {% endif %}
-                            {% endfor %}
                         </div>
+
                     </div>
                 </div>
             </div>

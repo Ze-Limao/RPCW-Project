@@ -21,14 +21,12 @@ def index():
     load_ontology_to_graphdb(ontology_file, repository_url, repository_name)
     return render_template('home.html')
 
-@main.route('/pokemon/<pokedex_number>')
-def pokemon_detail(pokedex_number):
-    pokemon = get_pokemon_by_name(pokedex_number)
+@main.route('/pokemon/<instance>')
+def pokemon_detail(instance):
+    pokemon = get_pokemon_by_name(instance)
 
     if pokemon:
         return render_template('pokemon.html', pokemon=pokemon), 200
-    else:
-        return render_template('pokemon-not-found.html'), 404
 
 @main.route('/sparql')
 def sparql():
@@ -172,17 +170,8 @@ def upload_ontology():
 @main.route('/api/download-ontology', methods=['GET'])
 def download_ontology():
     repo_name = request.args.get('repository_name', 'pokentology')
-    format_type = request.args.get('format', 'turtle')
-    
-    # Map format to content type
-    content_types = {
-        'rdf': 'application/rdf+xml',
-        'turtle': 'text/turtle',
-        'json-ld': 'application/ld+json',
-        'n-triples': 'application/n-triples'
-    }
-    
-    content_type = content_types.get(format_type, 'text/turtle')
+
+    content_type ='text/turtle'
     
     try:
         # Query all triples
@@ -195,14 +184,7 @@ def download_ontology():
             # Create a file-like object from the response content
             file_data = io.BytesIO(response.content)
             
-            # Determine file extension
-            extensions = {
-                'application/rdf+xml': 'rdf',
-                'text/turtle': 'ttl',
-                'application/ld+json': 'jsonld',
-                'application/n-triples': 'nt'
-            }
-            extension = extensions.get(content_type, 'ttl')
+            extension = 'ttl'
             
             return send_file(
                 file_data,

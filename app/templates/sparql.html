@@ -24,9 +24,12 @@
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
             font-size: 0.875rem;
         }
-        .cm-s-dracula .CodeMirror-gutters {
-            background-color: #1e1e2e;
-            border-right: 1px solid #2d2d3a;
+        .cm-s-dracula.CodeMirror.CodeMirror {
+          background-color: whitesmoke !important;
+        }
+
+        .cm-s-dracula .CodeMirror-gutters.CodeMirror-gutters {
+            background-color: whitesmoke!important;
         }
     </style>
 </head>
@@ -365,7 +368,6 @@ ORDER BY ?generation</pre>
         // Initialize CodeMirror
         let editor = CodeMirror.fromTextArea(document.getElementById("sparqlQuery"), {
             mode: "application/sparql-query",
-            theme: "dracula",
             lineNumbers: true,
             lineWrapping: true,
             tabSize: 2,

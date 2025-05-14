@@ -17,7 +17,7 @@
     }
 </style>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 min-h-screen flex flex-col">
     <!-- Navbar -->
     <nav class="bg-gradient-to-r from-red-600 to-red-800 text-white shadow-lg items-center">
         <div class="container mx-auto flex p-2 justify-between items-center">
@@ -63,7 +63,7 @@
     } %}
 
     <!-- Main Content -->
-    <div class="container mx-auto mt-8 relative">
+    <div class="flex-grow container mx-auto mt-8 relative">
         <!-- Pokemon Card -->
         <div
             class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-4xl transform hover:scale-101 transition-transform duration-300">
@@ -71,8 +71,13 @@
             <div class="relative">
                 <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-t-xl"></div>
                 <div class="relative px-6 py-8 flex justify-center">
-                    <img src="https://img.pokemondb.net/sprites/home/normal/{{pokemon.name}}.png" alt=" "
-                        class="w-40 h-40 object-contain drop-shadow-lg">
+                    {% if pokemon.pokedex_number is defined %}
+                    <img src="https://img.pokemondb.net/sprites/home/normal/{{ pokemon.name }}.png"
+                        alt=" " class="w-40 h-40 object-contain drop-shadow-lg">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt=" "
+                        class="w-72 h-40 object-contain drop-shadow-lg">
+                    {% endif %}
                 </div>
                 <!-- Pokeball Design Element -->
                 <div
@@ -83,16 +88,9 @@
 
             <!-- Pokemon Info -->
             <div class="px-6 pt-10 pb-6">
-                <div class="flex justify-between items-center">
-                    <a href="/pokemon/{{ pokemon.pokedex_number|int - 1 }}"
-                        class="cursor-pointer p-2 py-1 px-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors duration-300">
-                        < Previous</a>
-                            <h2 class="text-3xl font-bold text-center text-gray-800 capitalize mb-2">{{ pokemon.name }}
-                                #{{ pokemon.pokedex_number }}</h2>
-                            <a href="/pokemon/{{ pokemon.pokedex_number|int + 1 }}"
-                                class="cursor-pointer p-2 py-1 px-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors duration-300">Next
-                                ></a>
-
+                <div class="flex justify-center items-center">
+                    <h2 class="text-3xl font-bold text-center text-gray-800 capitalize mb-2">{{ pokemon.name }}
+                        #{{ pokemon.pokedex_number }}</h2>
                 </div>
                 <div class="flex justify-center mb-4">
                     {% for type in pokemon.relations.hasType %}
@@ -179,16 +177,16 @@
                 <div id="relationshipsList" class="mt-4 hidden">
                     <ul class="space-y-2">
                         {% for key, value in pokemon.relations.items() %}
-                        {% if key not in ['hasType', 'normalDamage', 'type', 'effectiveness'] %}
+                        {% if key not in ['hasType', 'normalDamage', 'effectiveness'] %}
                         <li class="flex justify-between py-1">
                             <span class="text-gray-700 capitalize">{{ key.replace('_', ' ') }}</span>
                             <div>
-                            {%for val in value %}
-                            {% set color = type_colors.get(val | lower, 'bg-gray-500') %}
-                            <span class="px-4 py-1 rounded-full text-sm {{color}} text-white mx-1">
-                                {{ val }}
-                            </span>
-                            {% endfor %}
+                                {%for val in value %}
+                                {% set color = type_colors.get(val | lower, 'bg-gray-500') %}
+                                <span class="px-4 py-1 rounded-full text-sm {{color}} text-white mx-1">
+                                    {{ val }}
+                                </span>
+                                {% endfor %}
                             </div>
                         </li>
                         <hr class="border-t border-gray-300">

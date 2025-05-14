@@ -54,8 +54,15 @@
 
             <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6">
                 <div class="p-6">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Ontology Generation Options</h2>
-
+                    <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-semibold text-gray-800">Ontology Generation Options</h2>
+                    <div class="flex justify-end">
+                                        <button type="submit"
+                                            class="cursor-pointer py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                                            Generate Ontology
+                                        </button>
+                                    </div>
+                </div>
                     <form method="POST" action="/api/generate">
                         <div>
                             <div class="mt-4 space-y-4">
@@ -66,29 +73,6 @@
                                         class="mt-1 block w-full border-gray-300 rounded-md p-2 shadow-sm focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
                                         placeholder="pokentology"
                                         value="{{ request.form.get('repository_name', 'pokentology') }}">
-                                </div>
-                                <div class="flex justify-between items-end">
-                                    <div>
-                                        <label for="format" class="block text-sm font-medium mb-2">Output
-                                            Format</label>
-                                        <select id="format" name="format"
-                                            class="mt-1 block w-42 pl-3 pr-10 py-2 text-base bg-gray-100 border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-md">
-                                            <option value="rdf" {% if request.form.get('format')=='rdf' %}selected{%
-                                                endif %}>RDF/XML</option>
-                                            <option value="turtle" {% if request.form.get('format', 'turtle' )=='turtle'
-                                                %}selected{% endif %}>Turtle</option>
-                                            <option value="json-ld" {% if request.form.get('format')=='json-ld'
-                                                %}selected{% endif %}>JSON-LD</option>
-                                            <option value="n-triples" {% if request.form.get('format')=='n-triples'
-                                                %}selected{% endif %}>N-Triples</option>
-                                        </select>
-                                    </div>
-                                    <div class="flex justify-end">
-                                        <button type="submit"
-                                            class="cursor-pointer py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                                            Generate Ontology
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -110,7 +94,7 @@
                                 </svg>
                                 Upload
                             </button>
-                            <a href="/api/download-ontology?repository_name={{ repository_info.repository_name if repository_info else 'pokentology' }}&format={{ request.form.get('format', 'turtle') }}"
+                            <a href="/api/download-ontology?repository_name={{ repository_info.repository_name if repository_info else 'pokentology'}}"
                                 class="flex cursor-pointer items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="size-4 mr-2">

@@ -1,16 +1,14 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
 
 prefix = "<http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>"
+clean_prefix = prefix.strip("<>")
 
-def get_pokemon_by_name(pokedex_number):
+def get_pokemon_by_name(instance):
+    instance_uri = clean_prefix + instance 
     query = f"""
-    PREFIX : {prefix}
-    
     SELECT ?property ?value
     WHERE {{
-        ?pokemon a :Pokemon ;
-                 :pokedex_number {pokedex_number} ;
-                 ?property ?value .
+      <{instance_uri}> ?property ?value .
     }}
     """
 
