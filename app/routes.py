@@ -33,10 +33,25 @@ def sparql():
     repository_info = get_repository_info()
     return render_template('sparql.html', repository_info=repository_info)
 
-@main.route('/generate')
+@main.route('/generate', methods=['GET', 'POST'])
 def generate_ontology():
+    message = None
+    error = None
+    
+    if request.method == 'POST':
+        repo_name = request.form.get('repository_name', 'pokentology')
+        try:
+            load_ontology_to_graphdb(ontology_base, repository_url, repo_name, True)
+            message = f"Ontology successfully generated and loaded into repository '{repo_name}'"
+        except Exception as e:
+            error = f"Ontology generation failed: {str(e)}"
+    
     repository_info = get_repository_info()
-    return render_template('generate.html', repository_info=repository_info)
+    return render_template('generate.html', 
+                          repository_info=repository_info,
+                          message=message,
+                          error=error)
+
 
 @main.route('/explore')
 def explore():
@@ -202,15 +217,3 @@ def delete_ontology():
     
     except Exception as e:
         return jsonify({"error": f"Error: {str(e)}"}), 500
-    
-
-@main.route('/api/generate', methods=['POST'])
-def generate():
-    repo_name = request.form.get('repository_name', 'pokentology')
-
-    try:
-        load_ontology_to_graphdb(ontology_base, repository_url, repo_name, True)
-        return jsonify({"success": True, "message": f"Ontology generated and loaded into repository '{repo_name}'"})
-    
-    except Exception as e:
-        return jsonify({"error": f"Ontology generation failed: {str(e)}"}), 500
