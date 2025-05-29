@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify, render_template, send_file
 from rdflib import Graph, URIRef, Literal
 from rdflib.namespace import RDF
 import requests
-from app.queries import get_ontology_stats, get_ontology_classes, get_pokemon_by_name, get_pokemons
+from app.queries import get_ontology_stats, get_ontology_classes, get_pokemon_by_name, get_pokemons, sparql_get_query, sparql_query
 from app.ontology import clear_repository, load_ontology_to_graphdb, get_repository_info, update_ontology
 
 main = Blueprint("main", __name__)
@@ -55,79 +55,65 @@ def explore():
                           stats=ontology_stats,
                           classes=formatted_classes)
 
-
 @main.route('/api/sparql', methods=['POST'])
 def execute_sparql():
+    """Execute SELECT queries using sparql_get_query function"""
     try:
         data = request.json
         query = data.get('query', '')
-        endpoint = data.get('endpoint', 'http://localhost:7200/repositories/pokentology')
-        format_type = data.get('format', 'json')
         
         if not query:
             return jsonify({"error": "Query cannot be empty"}), 400
         
-        # Set up SPARQL wrapper
-        sparql = SPARQLWrapper(endpoint)
-        sparql.setQuery(query)
-        
-        # Set return format based on user selection
-        if format_type == 'json':
-            sparql.setReturnFormat(JSON)
-        elif format_type == 'xml':
-            sparql.setReturnFormat(XML)
-        elif format_type == 'csv':
-            sparql.setReturnFormat(CSV)
-        elif format_type == 'tsv':
-            sparql.setReturnFormat(TSV)
-        else:
-            sparql.setReturnFormat(JSON)
+        # Log the query for debugging
+        print(f"Executing SELECT query: {query[:100]}...")
         
         try:
-            results = sparql.query().convert()
-            
-            # If not JSON format, convert to JSON for the response
-            if format_type != 'json':
-                if format_type == 'xml':
-                    return jsonify({
-                        "head": {"vars": ["result"]},
-                        "results": {
-                            "bindings": [
-                                {"result": {"type": "literal", "value": str(results)}}
-                            ]
-                        }
-                    })
-                elif format_type in ['csv', 'tsv']:
-                    lines = results.decode('utf-8').strip().split('\n')
-                    headers = lines[0].split(',' if format_type == 'csv' else '\t')
-                    
-                    bindings = []
-                    for line in lines[1:]:
-                        values = line.split(',' if format_type == 'csv' else '\t')
-                        binding = {}
-                        for i, header in enumerate(headers):
-                            if i < len(values):
-                                binding[header] = {"type": "literal", "value": values[i]}
-                        bindings.append(binding)
-                    
-                    return jsonify({
-                        "head": {"vars": headers},
-                        "results": {"bindings": bindings}
-                    })
-            
+            # Use the existing sparql_get_query function
+            results = sparql_get_query(query)
             return jsonify(results)
+            
         except Exception as e:
-            # Log the error for debugging
             print(f"SPARQL query error: {str(e)}")
             print(traceback.format_exc())
-            
             return jsonify({"error": f"Error executing query: {str(e)}"}), 400
             
     except Exception as e:
-        # Log the error for debugging
         print(f"API error: {str(e)}")
         print(traceback.format_exc())
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+@main.route('/api/sparql-update', methods=['POST'])
+def execute_sparql_update():
+    """Execute INSERT/UPDATE/DELETE queries using sparql_query function"""
+    try:
+        data = request.json
+        query = data.get('query', '')
         
+        if not query:
+            return jsonify({"error": "Query cannot be empty"}), 400
+        
+        # Log the query for debugging
+        print(f"Executing UPDATE query: {query[:100]}...")
+        
+        try:
+            # Use the existing sparql_query function for updates
+            result = sparql_query(query)
+            
+            # Update operations typically don't return data, just success
+            return jsonify({
+                "success": True,
+                "message": "Update operation completed successfully"
+            })
+            
+        except Exception as e:
+            print(f"SPARQL update error: {str(e)}")
+            print(traceback.format_exc())
+            return jsonify({"error": f"Error executing update: {str(e)}"}), 400
+            
+    except Exception as e:
+        print(f"API error: {str(e)}")
+        print(traceback.format_exc())
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @main.route('/api/upload-ontology', methods=['POST'])

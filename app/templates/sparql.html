@@ -27,7 +27,6 @@
         .cm-s-dracula.CodeMirror.CodeMirror {
           background-color: whitesmoke !important;
         }
-
         .cm-s-dracula .CodeMirror-gutters.CodeMirror-gutters {
             background-color: whitesmoke!important;
         }
@@ -57,105 +56,123 @@
     <!-- Main Content -->
     <div class="container mx-auto px-4 py-8">
         <div class="flex items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">SPARQL Query Explorer</h1>
+            <h1 class="text-3xl font-bold text-gray-800">SPARQL Query Interface</h1>
         </div>
         
-        <!-- Connection Status -->
-        <div class="bg-white rounded-lg shadow-md p-4 mb-6 flex items-center">
-            <div class="flex items-center">
-                <div id="connection-status" class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                <span class="text-sm text-gray-600">Connected to:</span>
-                <span class="text-sm font-medium text-gray-800 ml-2" id="endpoint-url">http://localhost:7200/repositories/{{ repository_info.repository_name }}</span>
+        <!-- Query Type Tabs -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex">
+                    <button id="query-tab" class="query-tab-btn bg-gray-50 border-b-2 border-red-500 text-red-600 py-4 px-6 text-sm font-medium">
+                        SELECT Queries
+                    </button>
+                    <button id="update-tab" class="query-tab-btn text-gray-500 hover:text-gray-700 py-4 px-6 text-sm font-medium border-b-2 border-transparent hover:border-gray-300">
+                        INSERT/UPDATE/DELETE
+                    </button>
+                </nav>
             </div>
         </div>
         
-        <!-- Main Query Interface -->
+        <!-- Main Interface -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left Panel: Query Editor -->
             <div class="lg:col-span-2">
-                <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-                    <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                            </svg>
-                            Query Editor
-                        </h2>
-                        <div class="flex space-x-2">
-                            <button id="copyQuery" class="text-gray-500 hover:text-gray-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                <!-- SELECT Query Section -->
+                <div id="query-section" class="query-section">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+                        <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                            <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
                                 </svg>
-                            </button>
-                            <button id="downloadQuery" class="text-gray-500 hover:text-gray-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                                </svg>
-                            </button>
+                                SELECT Query Editor
+                            </h2>
                         </div>
-                    </div>
-                    
-                    <div class="p-4">
-                        <textarea id="sparqlQuery">PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
+                        
+                        <div class="p-4">
+                            <textarea id="sparqlQuery">PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
-SELECT ?pokemon ?pokedex_number
+SELECT ?pokemon ?name ?pokedex_number
 WHERE {
   ?pokemon rdf:type :Pokemon .
-  ?pokemon :pokedex_number ?pokedex_number .
   ?pokemon :name ?name .
+  ?pokemon :pokedex_number ?pokedex_number .
 }
 ORDER BY ?pokedex_number
 LIMIT 10</textarea>
-                    </div>
-                    
-                    <div class="bg-gray-100 px-4 py-3 border-t border-gray-200 flex justify-between items-center">
-                        <div class="flex space-x-2">
-                            <button id="runQuery" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Run Query
-                            </button>
-                            <button id="clearQuery" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md text-sm font-medium">
-                                Clear
-                            </button>
                         </div>
-                        <div>
-                            <select id="queryFormat" class="bg-white border border-gray-300 text-gray-700 p-1 rounded-md text-sm focus:ring-red-500 focus:border-red-500">
-                                <option value="json">JSON</option>
-                                <option value="xml">XML</option>
-                                <option value="csv">CSV</option>
-                                <option value="tsv">TSV</option>
-                            </select>
+                        
+                        <div class="bg-gray-100 px-4 py-3 border-t border-gray-200 flex justify-between items-center">
+                            <div class="flex space-x-2">
+                                <button id="runQuery" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Run Query
+                                </button>
+                                <button id="clearQuery" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md text-sm font-medium">
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INSERT/UPDATE Query Section -->
+                <div id="update-section" class="query-section hidden">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+                        <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                            <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                INSERT/UPDATE/DELETE Editor
+                            </h2>
+                        </div>
+                        
+                        <div class="p-4">
+                            <textarea id="sparqlUpdateQuery">PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+INSERT DATA {
+  :pernadipau rdf:type :Pokemon ;
+               :name "Perna de Pau" ;
+               :pokedex_number 999 ;
+               :hasType :Type_Grass ;
+               :isFrom :Generation_I .
+}</textarea>
+                        </div>
+                        
+                        <div class="bg-gray-100 px-4 py-3 border-t border-gray-200 flex justify-between items-center">
+                            <div class="flex space-x-2">
+                                <button id="runUpdateQuery" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Execute Update
+                                </button>
+                                <button id="clearUpdateQuery" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md text-sm font-medium">
+                                    Clear
+                                </button>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">⚠️ Updates modify the ontology</span>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Query Results -->
+                <!-- Results Section -->
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                    <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
                         <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                             </svg>
                             Results
                         </h2>
-                        <div class="flex space-x-2">
-                            <button id="copyResults" class="text-gray-500 hover:text-gray-700 flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                </svg>
-                                Copy
-                            </button>
-                            <button id="downloadResults" class="text-gray-500 hover:text-gray-700 flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                                </svg>
-                                Download
-                            </button>
-                        </div>
                     </div>
                     
                     <div class="p-4">
@@ -167,7 +184,7 @@ LIMIT 10</textarea>
                         </div>
                         
                         <div id="results-empty" class="text-center py-8 text-gray-500">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
                             <p class="mt-2">Run a query to see results</p>
@@ -175,13 +192,27 @@ LIMIT 10</textarea>
                         
                         <div id="results-error" class="hidden bg-red-100 border border-red-400 rounded-md p-4 text-red-700">
                             <div class="flex">
-                                <svg class="h-5 w-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <svg class="h-5 w-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div>
                                     <h3 class="text-sm font-medium text-red-700">Query Error</h3>
                                     <div class="mt-2 text-sm" id="error-message">
                                         Error details will appear here
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="results-success" class="hidden bg-green-100 border border-green-400 rounded-md p-4 text-green-700">
+                            <div class="flex">
+                                <svg class="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <div>
+                                    <h3 class="text-sm font-medium text-green-700">Update Successful</h3>
+                                    <div class="mt-2 text-sm" id="success-message">
+                                        Update operation completed successfully
                                     </div>
                                 </div>
                             </div>
@@ -208,7 +239,7 @@ LIMIT 10</textarea>
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
                         <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg class="w-5 h-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
                             Sample Queries
@@ -216,141 +247,50 @@ LIMIT 10</textarea>
                     </div>
                     
                     <div class="p-4 space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
-                        <!-- Sample Query 1 -->
-                        <div class="border border-gray-200 rounded-md overflow-hidden hover:border-red-500 transition-colors">
-                            <div class="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center">
-                                <h3 class="font-medium text-gray-700 text-sm">All Pokemon by Type</h3>
-                                <button class="text-red-600 hover:text-red-800 text-sm" onclick="loadSampleQuery(1)">
-                                    Load
+                        <!-- SELECT Samples -->
+                        <div id="select-samples" class="sample-section">
+                            <h3 class="font-medium text-gray-800 mb-3">SELECT Queries</h3>
+                            
+                            <div class="space-y-2">
+                                <button onclick="loadSelectSample('pokemon-list')" class="w-full text-left p-3 border border-gray-200 rounded-md hover:border-red-500 transition-colors">
+                                    <div class="font-medium text-gray-700 text-sm">All Pokemon</div>
+                                    <div class="text-xs text-gray-500">Get all Pokemon with names and numbers</div>
                                 </button>
-                            </div>
-                            <div class="p-3">
-                                <pre class="text-xs text-gray-600 bg-gray-50 p-2 rounded overflow-x-auto">PREFIX : &lt;http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#&gt;
-PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
-
-SELECT ?pokemon ?type
-WHERE {
-  ?pokemon rdf:type :Pokemon .
-  ?pokemon :hasType ?type .
-}
-ORDER BY ?type ?pokemon
-LIMIT 20</pre>
+                                
+                                <button onclick="loadSelectSample('pokemon-types')" class="w-full text-left p-3 border border-gray-200 rounded-md hover:border-red-500 transition-colors">
+                                    <div class="font-medium text-gray-700 text-sm">Pokemon by Type</div>
+                                    <div class="text-xs text-gray-500">Get Pokemon grouped by their types</div>
+                                </button>
+                                
+                                <button onclick="loadSelectSample('type-count')" class="w-full text-left p-3 border border-gray-200 rounded-md hover:border-red-500 transition-colors">
+                                    <div class="font-medium text-gray-700 text-sm">Count by Type</div>
+                                    <div class="text-xs text-gray-500">Count Pokemon for each type</div>
+                                </button>
                             </div>
                         </div>
-                        
-                        <!-- Sample Query 2 -->
-                        <div class="border border-gray-200 rounded-md overflow-hidden hover:border-red-500 transition-colors">
-                            <div class="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center">
-                                <h3 class="font-medium text-gray-700 text-sm">Pokemon by Pokedex Number</h3>
-                                <button class="text-red-600 hover:text-red-800 text-sm" onclick="loadSampleQuery(2)">
-                                    Load
-                                </button>
-                            </div>
-                            <div class="p-3">
-                                <pre class="text-xs text-gray-600 bg-gray-50 p-2 rounded overflow-x-auto">PREFIX : &lt;http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#&gt;
-PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
 
-SELECT ?pokemon ?name ?pokedex_number
-WHERE {
-  ?pokemon rdf:type :Pokemon .
-  ?pokemon :name ?name .
-  ?pokemon :pokedex_number ?pokedex_number .
-}
-ORDER BY ?pokedex_number
-LIMIT 20</pre>
-                            </div>
-                        </div>
-                        
-                        <!-- Sample Query 3 -->
-                        <div class="border border-gray-200 rounded-md overflow-hidden hover:border-red-500 transition-colors">
-                            <div class="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center">
-                                <h3 class="font-medium text-gray-700 text-sm">Pokemon by Ability</h3>
-                                <button class="text-red-600 hover:text-red-800 text-sm" onclick="loadSampleQuery(3)">
-                                    Load
+                        <!-- UPDATE Samples -->
+                        <div id="update-samples" class="sample-section hidden">
+                            <h3 class="font-medium text-gray-800 mb-3">INSERT/UPDATE/DELETE</h3>
+                            
+                            <div class="space-y-2">
+                                <button onclick="loadUpdateSample('insert-pokemon')" class="w-full text-left p-3 border border-gray-200 rounded-md hover:border-orange-500 transition-colors">
+                                    <div class="font-medium text-gray-700 text-sm">Insert New Pokemon</div>
+                                    <div class="text-xs text-gray-500">Add a new Pokemon to the ontology</div>
                                 </button>
-                            </div>
-                            <div class="p-3">
-                                <pre class="text-xs text-gray-600 bg-gray-50 p-2 rounded overflow-x-auto">PREFIX : &lt;http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#&gt;
-PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
-
-SELECT ?ability (COUNT(?pokemon) as ?count)
-WHERE {
-  ?pokemon rdf:type :Pokemon .
-  ?pokemon :hasAbility ?ability .
-}
-GROUP BY ?ability
-ORDER BY DESC(?count)
-LIMIT 20</pre>
-                            </div>
-                        </div>
-                        
-                        <!-- Sample Query 4 -->
-                        <div class="border border-gray-200 rounded-md overflow-hidden hover:border-red-500 transition-colors">
-                            <div class="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center">
-                                <h3 class="font-medium text-gray-700 text-sm">All Types</h3>
-                                <button class="text-red-600 hover:text-red-800 text-sm" onclick="loadSampleQuery(4)">
-                                    Load
+                                
+                                <button onclick="loadUpdateSample('update-pokemon')" class="w-full text-left p-3 border border-gray-200 rounded-md hover:border-orange-500 transition-colors">
+                                    <div class="font-medium text-gray-700 text-sm">Update Pokemon</div>
+                                    <div class="text-xs text-gray-500">Modify existing Pokemon data</div>
                                 </button>
-                            </div>
-                            <div class="p-3">
-                                <pre class="text-xs text-gray-600 bg-gray-50 p-2 rounded overflow-x-auto">PREFIX : &lt;http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#&gt;
-PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
-
-SELECT DISTINCT ?type
-WHERE {
-  ?type rdf:type :Type .
-}
-ORDER BY ?type</pre>
-                            </div>
-                        </div>
-                        
-                        <!-- Sample Query 5 -->
-                        <div class="border border-gray-200 rounded-md overflow-hidden hover:border-red-500 transition-colors">
-                            <div class="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center">
-                                <h3 class="font-medium text-gray-700 text-sm">Count Pokemon by Generation</h3>
-                                <button class="text-red-600 hover:text-red-800 text-sm" onclick="loadSampleQuery(5)">
-                                    Load
+                                
+                                <button onclick="loadUpdateSample('delete-pokemon')" class="w-full text-left p-3 border border-gray-200 rounded-md hover:border-orange-500 transition-colors">
+                                    <div class="font-medium text-gray-700 text-sm">Delete Pokemon</div>
+                                    <div class="text-xs text-gray-500">Remove a Pokemon from the ontology</div>
                                 </button>
-                            </div>
-                            <div class="p-3">
-                                <pre class="text-xs text-gray-600 bg-gray-50 p-2 rounded overflow-x-auto">PREFIX : &lt;http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#&gt;
-PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
-
-SELECT ?generation (COUNT(?pokemon) as ?count)
-WHERE {
-  ?pokemon rdf:type :Pokemon .
-  ?pokemon :isFrom ?generation .
-}
-GROUP BY ?generation
-ORDER BY ?generation</pre>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Endpoint Configuration Modal -->
-    <div id="endpoint-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">SPARQL Endpoint Configuration</h3>
-            <div class="space-y-4">
-                <div>
-                    <label for="endpoint-input" class="block text-sm font-medium text-gray-700 mb-1">Endpoint URL</label>
-                    <input type="text" id="endpoint-input" class="w-full bg-white border border-gray-300 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500" value="http://localhost:7200/repositories/{{ repository_info.repository_name }}">
-                </div>
-                <div>
-                    <label for="repository-input" class="block text-sm font-medium text-gray-700 mb-1">Repository Name</label>
-                    <input type="text" id="repository-input" class="w-full bg-white border border-gray-300 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500" value="{{ repository_info.repository_name }}">
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button id="cancel-endpoint" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md text-sm font-medium">
-                        Cancel
-                    </button>
-                    <button id="save-endpoint" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                        Save
-                    </button>
                 </div>
             </div>
         </div>
@@ -365,8 +305,8 @@ ORDER BY ?generation</pre>
     </footer>
 
     <script>
-        // Initialize CodeMirror
-        let editor = CodeMirror.fromTextArea(document.getElementById("sparqlQuery"), {
+        // Initialize CodeMirror editors
+        let queryEditor = CodeMirror.fromTextArea(document.getElementById("sparqlQuery"), {
             mode: "application/sparql-query",
             lineNumbers: true,
             lineWrapping: true,
@@ -375,24 +315,56 @@ ORDER BY ?generation</pre>
             autoCloseBrackets: true,
             matchBrackets: true
         });
-        
-        // Load sample query
-        function loadSampleQuery(queryId) {
-            switch(queryId) {
-                case 1:
-                    editor.setValue(`PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
-SELECT ?pokemon ?type
-WHERE {
-  ?pokemon rdf:type :Pokemon .
-  ?pokemon :hasType ?type .
-}
-ORDER BY ?type ?pokemon
-LIMIT 20`);
-                    break;
-                case 2:
-                    editor.setValue(`PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
+        let updateEditor = CodeMirror.fromTextArea(document.getElementById("sparqlUpdateQuery"), {
+            mode: "application/sparql-query",
+            lineNumbers: true,
+            lineWrapping: true,
+            tabSize: 2,
+            indentWithTabs: false,
+            autoCloseBrackets: true,
+            matchBrackets: true
+        });
+
+        // Tab switching
+        document.getElementById('query-tab').addEventListener('click', () => switchTab('query'));
+        document.getElementById('update-tab').addEventListener('click', () => switchTab('update'));
+
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.query-tab-btn').forEach(btn => {
+                btn.className = 'query-tab-btn text-gray-500 hover:text-gray-700 py-4 px-6 text-sm font-medium border-b-2 border-transparent hover:border-gray-300';
+            });
+
+            // Update sections
+            document.querySelectorAll('.query-section').forEach(section => section.classList.add('hidden'));
+            document.querySelectorAll('.sample-section').forEach(section => section.classList.add('hidden'));
+
+            if (tab === 'query') {
+                document.getElementById('query-tab').className = 'query-tab-btn bg-gray-50 border-b-2 border-red-500 text-red-600 py-4 px-6 text-sm font-medium';
+                document.getElementById('query-section').classList.remove('hidden');
+                document.getElementById('select-samples').classList.remove('hidden');
+            } else {
+                document.getElementById('update-tab').className = 'query-tab-btn bg-gray-50 border-b-2 border-orange-500 text-orange-600 py-4 px-6 text-sm font-medium';
+                document.getElementById('update-section').classList.remove('hidden');
+                document.getElementById('update-samples').classList.remove('hidden');
+            }
+
+            clearResults();
+        }
+
+        function clearResults() {
+            document.getElementById('results-empty').classList.remove('hidden');
+            document.getElementById('results-error').classList.add('hidden');
+            document.getElementById('results-success').classList.add('hidden');
+            document.getElementById('results-table').classList.add('hidden');
+            document.getElementById('results-loading').classList.add('hidden');
+        }
+
+        // Sample query loaders
+        function loadSelectSample(type) {
+            const queries = {
+                'pokemon-list': `PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
 SELECT ?pokemon ?name ?pokedex_number
@@ -402,371 +374,200 @@ WHERE {
   ?pokemon :pokedex_number ?pokedex_number .
 }
 ORDER BY ?pokedex_number
-LIMIT 20`);
-                    break;
-                case 3:
-                    editor.setValue(`PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
+LIMIT 20`,
+                'pokemon-types': `PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
-SELECT ?ability (COUNT(?pokemon) as ?count)
+SELECT ?pokemon ?name ?type
 WHERE {
   ?pokemon rdf:type :Pokemon .
-  ?pokemon :hasAbility ?ability .
+  ?pokemon :name ?name .
+  ?pokemon :hasType ?type .
 }
-GROUP BY ?ability
-ORDER BY DESC(?count)
-LIMIT 20`);
-                    break;
-                case 4:
-                    editor.setValue(`PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
+ORDER BY ?type ?name
+LIMIT 20`,
+                'type-count': `PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
-SELECT DISTINCT ?type
-WHERE {
-  ?type rdf:type :Type .
-}
-ORDER BY ?type`);
-                    break;
-                case 5:
-                    editor.setValue(`PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-
-SELECT ?generation (COUNT(?pokemon) as ?count)
+SELECT ?type (COUNT(?pokemon) as ?count)
 WHERE {
   ?pokemon rdf:type :Pokemon .
-  ?pokemon :isFrom ?generation .
+  ?pokemon :hasType ?type .
 }
-GROUP BY ?generation
-ORDER BY ?generation`);
-                    break;
-            }
+GROUP BY ?type
+ORDER BY DESC(?count)`
+            };
             
-            editor.focus();
+            queryEditor.setValue(queries[type] || '');
+            queryEditor.focus();
         }
-        
-        // Clear query
-        document.getElementById('clearQuery').addEventListener('click', function() {
-            editor.setValue('');
-            editor.focus();
-        });
-        
-        // Copy query
-        document.getElementById('copyQuery').addEventListener('click', function() {
-            const queryText = editor.getValue();
-            navigator.clipboard.writeText(queryText).then(function() {
-                showToast('Query copied to clipboard');
-            });
-        });
-        
-        // Download query
-        document.getElementById('downloadQuery').addEventListener('click', function() {
-            const queryText = editor.getValue();
-            const blob = new Blob([queryText], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'query.sparql';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
-        
-        // Copy results
-        document.getElementById('copyResults').addEventListener('click', function() {
-            const resultsTable = document.getElementById('results-table');
-            if (resultsTable.classList.contains('hidden')) {
-                showToast('No results to copy');
-                return;
-            }
+
+        function loadUpdateSample(type) {
+            const queries = {
+                'insert-pokemon': `PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+INSERT DATA {
+  :pernadipau rdf:type :Pokemon ;
+               :name "Perna de Pau" ;
+               :pokedex_number 999 ;
+               :hasType :Type_Grass ;
+               :isFrom :Generation_II .
+}`,
+                'update-pokemon': `PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
+
+DELETE {
+  :bulbasaur :name ?oldName .
+}
+INSERT {
+  :bulbasaur :name "Bulbasaur Updated" .
+}
+WHERE {
+  :bulbasaur :name ?oldName .
+}`,
+                'delete-pokemon': `PREFIX : <http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>
+
+DELETE WHERE {
+  :pernadipau ?p ?o .
+}`
+            };
             
-            // Create a temporary textarea to copy the table HTML
-            const textarea = document.createElement('textarea');
-            textarea.value = resultsTable.outerHTML;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            
-            showToast('Results copied to clipboard');
-        });
-        
-        // Download results
-        document.getElementById('downloadResults').addEventListener('click', function() {
-            const resultsTable = document.getElementById('results-table');
-            if (resultsTable.classList.contains('hidden')) {
-                showToast('No results to download');
-                return;
-            }
-            
-            const format = document.getElementById('queryFormat').value;
-            let content = '';
-            let filename = 'results';
-            let mimeType = '';
-            
-            // Get table data
-            const headers = [];
-            const rows = [];
-            
-            document.querySelectorAll('#results-headers th').forEach(th => {
-                headers.push(th.textContent);
-            });
-            
-            document.querySelectorAll('#results-body tr').forEach(tr => {
-                const row = [];
-                tr.querySelectorAll('td').forEach(td => {
-                    row.push(td.textContent);
-                });
-                rows.push(row);
-            });
-            
-            // Format data based on selected format
-            switch (format) {
-                case 'json':
-                    const jsonData = rows.map(row => {
-                        const obj = {};
-                        headers.forEach((header, i) => {
-                            obj[header] = row[i];
-                        });
-                        return obj;
-                    });
-                    content = JSON.stringify(jsonData, null, 2);
-                    filename += '.json';
-                    mimeType = 'application/json';
-                    break;
-                    
-                case 'csv':
-                    content = [headers.join(',')].concat(rows.map(row => row.join(','))).join('\n');
-                    filename += '.csv';
-                    mimeType = 'text/csv';
-                    break;
-                    
-                case 'tsv':
-                    content = [headers.join('\t')].concat(rows.map(row => row.join('\t'))).join('\n');
-                    filename += '.tsv';
-                    mimeType = 'text/tab-separated-values';
-                    break;
-                    
-                case 'xml':
-                    content = '<?xml version="1.0" encoding="UTF-8"?>\n<results>\n';
-                    rows.forEach(row => {
-                        content += '  <result>\n';
-                        headers.forEach((header, i) => {
-                            content += `    <${header}>${row[i]}</${header}>\n`;
-                        });
-                        content += '  </result>\n';
-                    });
-                    content += '</results>';
-                    filename += '.xml';
-                    mimeType = 'application/xml';
-                    break;
-            }
-            
-            // Download file
-            const blob = new Blob([content], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
-        
-        // Load endpoint from localStorage
-        const savedEndpoint = localStorage.getItem('sparqlEndpoint');
-        const savedRepository = localStorage.getItem('sparqlRepository');
-        
-        if (savedEndpoint) {
-            document.getElementById('endpoint-url').textContent = savedEndpoint;
-            document.getElementById('endpoint-input').value = savedEndpoint;
+            updateEditor.setValue(queries[type] || '');
+            updateEditor.focus();
         }
-        
-        if (savedRepository) {
-            document.getElementById('repository-input').value = savedRepository;
-        }
-        
-        // Run query
-        document.getElementById('runQuery').addEventListener('click', function() {
-            const query = editor.getValue();
-            
+
+        // Clear buttons
+        document.getElementById('clearQuery').addEventListener('click', () => {
+            queryEditor.setValue('');
+            queryEditor.focus();
+        });
+
+        document.getElementById('clearUpdateQuery').addEventListener('click', () => {
+            updateEditor.setValue('');
+            updateEditor.focus();
+        });
+
+        // Execute buttons
+        document.getElementById('runQuery').addEventListener('click', () => {
+            executeQuery(queryEditor.getValue(), false);
+        });
+
+        document.getElementById('runUpdateQuery').addEventListener('click', () => {
+            executeQuery(updateEditor.getValue(), true);
+        });
+
+        function executeQuery(query, isUpdate) {
             if (!query.trim()) {
                 showToast('Query cannot be empty', 'error');
                 return;
             }
-            
-            // Show loading
-            document.getElementById('results-empty').classList.add('hidden');
-            document.getElementById('results-error').classList.add('hidden');
-            document.getElementById('results-table').classList.add('hidden');
+
+            clearResults();
             document.getElementById('results-loading').classList.remove('hidden');
-            
-            // Get endpoint from localStorage or use default
-            const endpoint = localStorage.getItem('sparqlEndpoint') || 'http://localhost:7200/repositories/{{ repository_info.repository_name }}';
-            const format = document.getElementById('queryFormat').value;
-            
-            // Update connection status to "connecting"
-            const connectionStatus = document.getElementById('connection-status');
-            connectionStatus.className = 'w-3 h-3 bg-yellow-500 rounded-full mr-2';
-            
-            // Execute query
-            fetch('/api/sparql', {
+
+            const endpoint = isUpdate ? '/api/sparql-update' : '/api/sparql';
+
+            fetch(endpoint, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    query: query,
-                    endpoint: endpoint,
-                    format: format
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query })
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                // Hide loading
                 document.getElementById('results-loading').classList.add('hidden');
-                
-                // Update connection status to "connected"
-                connectionStatus.className = 'w-3 h-3 bg-green-500 rounded-full mr-2';
-                
-                // Check if there's an error in the response
+
                 if (data.error) {
                     document.getElementById('error-message').textContent = data.error;
                     document.getElementById('results-error').classList.remove('hidden');
                     return;
                 }
-                
-                // Process results
-                if (data.results && data.results.bindings && data.results.bindings.length > 0) {
-                    // Get variables from the first result
-                    const variables = data.head.vars;
-                    
-                    // Create headers
-                    const headersRow = document.getElementById('results-headers');
-                    headersRow.innerHTML = '';
-                    
-                    variables.forEach(variable => {
-                        const th = document.createElement('th');
-                        th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
-                        th.textContent = variable;
-                        headersRow.appendChild(th);
-                    });
-                    
-                    // Create rows
-                    const tbody = document.getElementById('results-body');
-                    tbody.innerHTML = '';
-                    
-                    data.results.bindings.forEach(binding => {
-                        const tr = document.createElement('tr');
-                        tr.className = 'hover:bg-gray-50';
-                        
-                        variables.forEach(variable => {
-                            const td = document.createElement('td');
-                            td.className = 'px-6 py-4 whitespace-nowrap text-sm';
-                            
-                            if (binding[variable]) {
-                                const value = binding[variable].value;
-                                const type = binding[variable].type;
-                                
-                                // Special handling for Pokemon types
-                                if (variable === 'type' && typeof value === 'string' && value.includes('Type_')) {
-                                    const typeName = value.split('_').pop();
-                                    const typeColors = {
-                                        'Water': 'bg-blue-100 text-blue-800',
-                                        'Fire': 'bg-red-100 text-red-800',
-                                        'Grass': 'bg-green-100 text-green-800',
-                                        'Electric': 'bg-yellow-100 text-yellow-800',
-                                        'Poison': 'bg-purple-100 text-purple-800',
-                                        'Normal': 'bg-gray-100 text-gray-800',
-                                        'Fighting': 'bg-red-100 text-red-800',
-                                        'Flying': 'bg-indigo-100 text-indigo-800',
-                                        'Ground': 'bg-yellow-100 text-yellow-800',
-                                        'Rock': 'bg-yellow-100 text-yellow-800',
-                                        'Bug': 'bg-green-100 text-green-800',
-                                        'Ghost': 'bg-purple-100 text-purple-800',
-                                        'Steel': 'bg-gray-100 text-gray-800',
-                                        'Psychic': 'bg-pink-100 text-pink-800',
-                                        'Ice': 'bg-blue-100 text-blue-800',
-                                        'Dragon': 'bg-indigo-100 text-indigo-800',
-                                        'Dark': 'bg-gray-100 text-gray-800',
-                                        'Fairy': 'bg-pink-100 text-pink-800'
-                                    };
-                                    
-                                    const colorClass = typeColors[typeName] || 'bg-gray-100 text-gray-800';
-                                    
-                                    const span = document.createElement('span');
-                                    span.className = `px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${colorClass}`;
-                                    span.textContent = typeName;
-                                    td.appendChild(span);
-                                } else {
-                                    // Extract the last part of URIs for better readability
-                                    let displayValue = value;
-                                    if (type === 'uri' && value.includes('#')) {
-                                        displayValue = value.split('#').pop();
-                                    }
-                                    
-                                    td.textContent = displayValue;
-                                    
-                                    // If it's a URI, make it a link
-                                    if (type === 'uri') {
-                                        td.innerHTML = `<a href="${value}" class="text-blue-600 hover:text-blue-800" target="_blank">${displayValue}</a>`;
-                                    }
-                                }
-                            } else {
-                                td.textContent = '';
-                                td.className += ' text-gray-400';
-                            }
-                            
-                            tr.appendChild(td);
-                        });
-                        
-                        tbody.appendChild(tr);
-                    });
-                    
-                    // Show results table
-                    document.getElementById('results-table').classList.remove('hidden');
+
+                if (isUpdate) {
+                    document.getElementById('success-message').textContent = data.message || 'Update completed successfully';
+                    document.getElementById('results-success').classList.remove('hidden');
                 } else {
-                    // No results
-                    document.getElementById('results-empty').classList.remove('hidden');
+                    if (data.results && data.results.bindings && data.results.bindings.length > 0) {
+                        displayResults(data);
+                    } else {
+                        document.getElementById('results-empty').classList.remove('hidden');
+                    }
                 }
             })
             .catch(error => {
-                // Hide loading
                 document.getElementById('results-loading').classList.add('hidden');
-                
-                // Update connection status to "error"
-                connectionStatus.className = 'w-3 h-3 bg-red-500 rounded-full mr-2';
-                
-                // Show error
                 document.getElementById('error-message').textContent = error.message;
                 document.getElementById('results-error').classList.remove('hidden');
             });
-        });
-        
-        // Toast notification
+        }
+
+        function displayResults(data) {
+            const variables = data.head.vars;
+            
+            // Create headers
+            const headersRow = document.getElementById('results-headers');
+            headersRow.innerHTML = '';
+            
+            variables.forEach(variable => {
+                const th = document.createElement('th');
+                th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                th.textContent = variable;
+                headersRow.appendChild(th);
+            });
+            
+            // Create rows
+            const tbody = document.getElementById('results-body');
+            tbody.innerHTML = '';
+            
+            data.results.bindings.forEach(binding => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50';
+                
+                variables.forEach(variable => {
+                    const td = document.createElement('td');
+                    td.className = 'px-6 py-4 whitespace-nowrap text-sm';
+                    
+                    if (binding[variable]) {
+                        const value = binding[variable].value;
+                        const type = binding[variable].type;
+                        
+                        // Clean up URIs for display
+                        let displayValue = value;
+                        if (type === 'uri' && value.includes('#')) {
+                            displayValue = value.split('#').pop();
+                        }
+                        
+                        td.textContent = displayValue;
+                        
+                        // Make URIs clickable
+                        if (type === 'uri') {
+                            td.innerHTML = `<a href="${value}" class="text-blue-600 hover:text-blue-800" target="_blank">${displayValue}</a>`;
+                        }
+                    } else {
+                        td.textContent = '';
+                        td.className += ' text-gray-400';
+                    }
+                    
+                    tr.appendChild(td);
+                });
+                
+                tbody.appendChild(tr);
+            });
+            
+            document.getElementById('results-table').classList.remove('hidden');
+        }
+
         function showToast(message, type = 'success') {
-            // Create toast element
             const toast = document.createElement('div');
             toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-md text-white text-sm font-medium z-50 ${
                 type === 'success' ? 'bg-green-600' : 'bg-red-600'
             }`;
             toast.textContent = message;
             
-            // Add to document
             document.body.appendChild(toast);
             
-            // Remove after 3 seconds
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'transition-opacity', 'duration-500');
-                setTimeout(() => {
-                    document.body.removeChild(toast);
-                }, 500);
+                setTimeout(() => document.body.removeChild(toast), 500);
             }, 3000);
         }
     </script>
