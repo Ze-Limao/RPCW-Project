@@ -259,3 +259,7 @@ def delete_ontology():
         error_msg = f"Unexpected error during deletion: {str(e)}"
         print(f"Full error traceback: {traceback.format_exc()}")
         return jsonify({"error": error_msg}), 500
+
+@main.route('/graph')
+def graph():
+    return render_template('graph.html')

@@ -37,6 +37,10 @@
                     class="cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-white hover:text-red-700 transition-colors duration-300 flex items-center">
                     SPARQL
                 </a>
+                <a href="/graph"
+                    class="cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-white hover:text-red-700 transition-colors duration-300 flex items-center">
+                    Graph
+                </a>
             </div>
         </div>
     </nav>
@@ -183,19 +187,25 @@
                             <!-- Other Classes Grids -->
                             {% for class_name, instances in classes.items() %}
                             {% if class_name != 'Pokemon' %}
-                            <div id="{{ class_name|lower }}-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 instances-grid hidden" data-class="{{ class_name }}">
+                            <div id="{{ class_name|lower }}-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 instances-grid hidden" data-class="{{ class_name }}">
                                 {% for instance in instances %}
                                 <a href="/pokemon/{{ instance }}" class="block instance-item" data-name="{{ instance|lower }}">
                                     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                                        {% if class_name in ['PokemonLegendary', 'PokemonPseudoLegendary', 'PokemonNormal'] %}
                                         <div class="h-20 bg-gradient-to-r from-gray-100 to-gray-300 flex items-center justify-center">
-                                            <div class="flex items-center justify-center">
-                                                <img src="static/images/logo.png" alt="{{ instance }}" class="object-contain drop-shadow-lg">
-                                            </div>
+                                            <img src="https://img.pokemondb.net/sprites/home/normal/{{instance}}.png"
+                                                alt="{{ instance }}" class="h-16 w-16 object-contain drop-shadow-lg">
                                         </div>
                                         <div class="p-2 text-center">
                                             <h3 class="font-medium text-sm">{{ instance }}</h3>
                                             <p class="text-xs text-gray-500">{{ class_name }}</p>
                                         </div>
+                                        {% else %}
+                                        <div class="p-4 text-center">
+                                            <h3 class="font-medium text-sm">{{ instance }}</h3>
+                                            <p class="text-xs text-gray-500 mt-1">{{ class_name }}</p>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </a>
                                 {% endfor %}
@@ -256,6 +266,24 @@
                 pokeball: 'bg-indigo-500', 
                 text: 'text-indigo-600',
                 badge: 'bg-indigo-100 text-indigo-800'
+            },
+            'PokemonLegendary': { 
+                header: 'from-yellow-400 to-yellow-600', 
+                pokeball: 'bg-yellow-500', 
+                text: 'text-yellow-600',
+                badge: 'bg-yellow-100 text-yellow-800'
+            },
+            'PokemonPseudoLegendary': { 
+                header: 'from-orange-400 to-orange-600', 
+                pokeball: 'bg-orange-500', 
+                text: 'text-orange-600',
+                badge: 'bg-orange-100 text-orange-800'
+            },
+            'PokemonNormal': { 
+                header: 'from-green-400 to-green-600', 
+                pokeball: 'bg-green-500', 
+                text: 'text-green-600',
+                badge: 'bg-green-100 text-green-800'
             }
         };
 

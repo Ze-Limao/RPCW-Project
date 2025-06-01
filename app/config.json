@@ -1,5 +1,5 @@
 {
-    "url": "",
-    "name": "",
-    "prefix": ""
+    "url": "http://localhost:7200",
+    "name": "pokentology",
+    "prefix": "<http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>"
 }

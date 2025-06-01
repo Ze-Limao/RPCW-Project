@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Ontology - Graph Visualization</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='images/background.png') }}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
+        }
+        
+        .graph-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .control-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .node {
+            cursor: pointer;
+            stroke-width: 2px;
+        }
+        
+        .node:hover {
+            stroke-width: 4px;
+        }
+        
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+        }
+        
+        .node-label {
+            font-family: 'Arial', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            text-anchor: middle;
+            pointer-events: none;
+            fill: #333;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            max-width: 300px;
+            overflow-wrap: break-word;
+        }
+        
+        .property-checkbox {
+            margin: 4px 0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .property-checkbox:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .property-checkbox input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        .slider-container {
+            margin: 10px 0;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .slider:hover {
+            opacity: 1;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-gradient-to-r from-red-600 to-red-800 text-white shadow-lg">
+        <div class="container mx-auto flex p-2 justify-between items-center">
+            <a href="/">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Pokentology" class="h-12">
+            </a>
+            <div class="flex space-x-2">
+                <a href="/generate" class="cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-white hover:text-red-700 transition-colors duration-300">
+                    Generate Ontology
+                </a>
+                <a href="/explore" class="cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-white hover:text-red-700 transition-colors duration-300">
+                    Explore
+                </a>
+                <a href="/sparql" class="cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-white hover:text-red-700 transition-colors duration-300">
+                    SPARQL
+                </a>
+                <a href="/graph" class="cursor-pointer bg-white text-red-700 px-4 py-2 rounded-lg transition-colors duration-300">
+                    Graph
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-4">
+        <div class="mb-6">
+            <h1 class="text-4xl font-bold text-center text-gray-800 mb-2">Pokemon Ontology Graph Visualization</h1>
+            <p class="text-center text-gray-600">Interactive exploration of Pokemon relationships and properties</p>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel p-4 mb-6">
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex gap-4 items-center">
+                    <input type="text" id="searchInput" placeholder="Search nodes..." 
+                           class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    
+                    <select id="classFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="all">All Classes</option>
+                        <!-- Will be populated dynamically -->
+                    </select>
+                    
+                    <button id="loadButton" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                        Load Graph
+                    </button>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button id="resetView" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        Reset View
+                    </button>
+                    <button id="toggleLabels" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                        Toggle Labels
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graph and Controls Container -->
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Graph Container -->
+            <div class="flex-1 graph-container p-4">
+                <div id="graph" class="w-full" style="height: 600px;"></div>
+            </div>
+
+            <!-- Controls Panel -->
+            <div class="lg:w-80 space-y-4">
+                <!-- Node Limit Control -->
+                <div class="control-panel p-4">
+                    <h3 class="text-lg font-bold mb-3 text-gray-800">Node Limit</h3>
+                    <div class="slider-container">
+                        <label for="nodeSlider" class="block text-sm font-medium text-gray-700 mb-2">
+                            Number of nodes: <span id="nodeCount">100</span>
+                        </label>
+                        <input type="range" id="nodeSlider" class="slider" min="50" max="2000" value="100" step="50">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>50</span>
+                            <span>2000</span>
+                        </div>
+                    </div>
+                    <button id="applyNodeLimit" class="mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors w-full">
+                        Apply Limit
+                    </button>
+                </div>
+
+                <!-- Object Properties Control -->
+                <div class="control-panel p-4">
+                    <h3 class="text-lg font-bold mb-3 text-gray-800">Object Properties</h3>
+                    <div class="mb-3">
+                        <button id="selectAllProperties" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors mr-2">
+                            Select All
+                        </button>
+                        <button id="deselectAllProperties" class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors">
+                            Deselect All
+                        </button>
+                    </div>
+                    <div id="propertiesContainer" class="max-h-60 overflow-y-auto">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                    <button id="applyPropertyFilter" class="mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors w-full">
+                        Apply Filter
+                    </button>
+                </div>
+
+                <!-- Statistics -->
+                <div class="control-panel p-4">
+                    <h3 class="text-lg font-bold mb-3 text-gray-800">Statistics</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Total Nodes:</span>
+                            <span id="totalNodes" class="font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Total Edges:</span>
+                            <span id="totalEdges" class="font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Visible Nodes:</span>
+                            <span id="visibleNodes" class="font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Visible Edges:</span>
+                            <span id="visibleEdges" class="font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Active Properties:</span>
+                            <span id="activeProperties" class="font-semibold">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="control-panel p-4">
+                    <h3 class="text-lg font-bold mb-3 text-gray-800">Legend</h3>
+                    <div id="legend" class="space-y-2"></div>
+                </div>
+                
+                <!-- Loading Indicator -->
+                <div id="loadingIndicator" class="control-panel p-4 text-center hidden">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                    <p class="text-gray-600">Loading ontology data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip" style="display: none;"></div>
+
+    <script>
+        // Graph configuration
+        const width = document.getElementById('graph').clientWidth;
+        const height = 600;
+        
+        // Color scheme for different node types
+        const nodeColors = {
+            'Pokemon': '#10b981',
+            'Type': '#ef4444',
+            'Move': '#3b82f6',
+            'Ability': '#8b5cf6',
+            'Generation': '#eab308',
+            'Region': '#6366f1',
+            'Class': '#ec4899',
+            'Property': '#14b8a6',
+            'Other': '#6b7280'
+        };
+        
+        // Node sizes
+        const nodeSizes = {
+            'Pokemon': 8,
+            'Type': 6,
+            'Move': 5,
+            'Ability': 5,
+            'Generation': 7,
+            'Region': 7,
+            'Class': 6,
+            'Property': 4,
+            'Other': 4
+        };
+        
+        // Create SVG
+        const svg = d3.select('#graph')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .style('border-radius', '8px');
+            
+        // Create zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on('zoom', (event) => {
+                container.attr('transform', event.transform);
+            });
+            
+        svg.call(zoom);
+        
+        // Create container for graph elements
+        const container = svg.append('g');
+        
+        // Global variables
+        let allNodes = [];
+        let allLinks = [];
+        let nodes = [];
+        let links = [];
+        let simulation;
+        let showLabels = true;
+        let nodeElements, linkElements, labelElements;
+        let classTypes = [];
+        let objectProperties = [];
+        let selectedProperties = new Set();
+        let nodeLimit = 100;
+        
+        // Create tooltip
+        const tooltip = d3.select('#tooltip');
+        
+        // Function to extract name from URI
+        function extractName(uri) {
+            if (!uri || typeof uri !== 'string') return 'Unknown';
+            
+            if (uri.includes('#')) {
+                return uri.split('#').pop();
+            }
+            if (uri.includes('/')) {
+                return uri.split('/').pop();
+            }
+            return uri;
+        }
+        
+        // Function to determine node type
+        function determineNodeType(uri, types) {
+            if (!uri) return 'Other';
+            
+            const name = extractName(uri).toLowerCase();
+            
+            // Check explicit types first
+            if (types && types.length > 0) {
+                for (const type of types) {
+                    const typeName = extractName(type).toLowerCase();
+                    if (typeName.includes('pokemon')) return 'Pokemon';
+                    if (typeName.includes('type')) return 'Type';
+                    if (typeName.includes('move')) return 'Move';
+                    if (typeName.includes('ability')) return 'Ability';
+                    if (typeName.includes('generation')) return 'Generation';
+                    if (typeName.includes('region')) return 'Region';
+                }
+            }
+            
+            // Check URI patterns
+            if (name.startsWith('type_')) return 'Type';
+            if (name.startsWith('move_')) return 'Move';
+            if (name.startsWith('ability_')) return 'Ability';
+            if (name.startsWith('generation_')) return 'Generation';
+            if (name.startsWith('region_')) return 'Region';
+            
+            // Check if it's a Pokemon by name pattern
+            if (/^[a-z]+$/.test(name) && !name.includes('_')) return 'Pokemon';
+            
+            return 'Other';
+        }
+        
+        // Load ontology data
+        async function loadOntologyData() {
+            try {
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                
+                // First query: Get all classes
+                const classesQuery = `
+                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                    
+                    SELECT DISTINCT ?class ?label
+                    WHERE {
+                        ?class rdf:type owl:Class .
+                        OPTIONAL { ?class rdfs:label ?label }
+                    }
+                    ORDER BY ?class
+                `;
+                
+                const classesResponse = await fetch('/api/sparql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: classesQuery })
+                });
+                
+                const classesData = await classesResponse.json();
+                
+                // Populate class filter dropdown
+                const classFilter = document.getElementById('classFilter');
+                classFilter.innerHTML = '<option value="all">All Classes</option>';
+                
+                if (classesData.results && classesData.results.bindings) {
+                    classesData.results.bindings.forEach(binding => {
+                        const classUri = binding.class?.value;
+                        if (classUri) {
+                            const className = extractName(classUri);
+                            classTypes.push(className);
+                            const option = document.createElement('option');
+                            option.value = classUri;
+                            option.textContent = binding.label?.value || className;
+                            classFilter.appendChild(option);
+                        }
+                    });
+                }
+                
+                // Second query: Get all object properties
+                const propertiesQuery = `
+                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                    
+                    SELECT DISTINCT ?property ?label
+                    WHERE {
+                        ?property rdf:type owl:ObjectProperty .
+                        OPTIONAL { ?property rdfs:label ?label }
+                    }
+                    ORDER BY ?property
+                `;
+                
+                const propertiesResponse = await fetch('/api/sparql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: propertiesQuery })
+                });
+                
+                const propertiesData = await propertiesResponse.json();
+                
+                // Store object properties
+                objectProperties = [];
+                if (propertiesData.results && propertiesData.results.bindings) {
+                    propertiesData.results.bindings.forEach(binding => {
+                        const propertyUri = binding.property?.value;
+                        if (propertyUri) {
+                            objectProperties.push({
+                                uri: propertyUri,
+                                name: extractName(propertyUri),
+                                label: binding.label?.value || extractName(propertyUri)
+                            });
+                        }
+                    });
+                }
+                
+                // Populate properties checkboxes
+                populatePropertiesCheckboxes();
+                
+                // Third query: Get all entities and their types
+                const entitiesQuery = `
+                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                    
+                    SELECT ?entity ?type ?label
+                    WHERE {
+                        ?entity rdf:type ?type .
+                        OPTIONAL { ?entity rdfs:label ?label }
+                    }
+                    LIMIT 3000
+                `;
+                
+                const entitiesResponse = await fetch('/api/sparql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: entitiesQuery })
+                });
+                
+                const entitiesData = await entitiesResponse.json();
+                
+                // Process entities
+                const nodeMap = new Map();
+                const entityTypes = new Map();
+                
+                if (entitiesData.results && entitiesData.results.bindings) {
+                    entitiesData.results.bindings.forEach(binding => {
+                        const entity = binding.entity?.value;
+                        const type = binding.type?.value;
+                        const label = binding.label?.value;
+                        
+                        if (entity && type) {
+                            // Store entity types
+                            if (!entityTypes.has(entity)) {
+                                entityTypes.set(entity, []);
+                            }
+                            entityTypes.get(entity).push(type);
+                            
+                            // Create node
+                            if (!nodeMap.has(entity)) {
+                                nodeMap.set(entity, {
+                                    id: entity,
+                                    label: label || extractName(entity),
+                                    types: []
+                                });
+                            }
+                        }
+                    });
+                }
+                
+                // Add types to nodes
+                nodeMap.forEach((node, id) => {
+                    node.types = entityTypes.get(id) || [];
+                    node.type = determineNodeType(id, node.types);
+                });
+                
+                // Fourth query: Get all relationships
+                const relationsQuery = `
+                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                    
+                    SELECT ?subject ?predicate ?object
+                    WHERE {
+                        ?subject ?predicate ?object .
+                        FILTER(?predicate != rdf:type)
+                        FILTER(?predicate != rdfs:label)
+                        FILTER(!isLiteral(?object))
+                    }
+                    LIMIT 5000
+                `;
+                
+                const relationsResponse = await fetch('/api/sparql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: relationsQuery })
+                });
+                
+                const relationsData = await relationsResponse.json();
+                
+                // Process relationships
+                allLinks = [];
+                const linkSet = new Set();
+                
+                if (relationsData.results && relationsData.results.bindings) {
+                    relationsData.results.bindings.forEach(binding => {
+                        const subject = binding.subject?.value;
+                        const predicate = binding.predicate?.value;
+                        const object = binding.object?.value;
+                        
+                        if (subject && predicate && object) {
+                            // Add missing nodes
+                            if (!nodeMap.has(subject)) {
+                                nodeMap.set(subject, {
+                                    id: subject,
+                                    label: extractName(subject),
+                                    type: 'Other',
+                                    types: []
+                                });
+                            }
+                            
+                            if (!nodeMap.has(object)) {
+                                nodeMap.set(object, {
+                                    id: object,
+                                    label: extractName(object),
+                                    type: 'Other',
+                                    types: []
+                                });
+                            }
+                            
+                            // Add link
+                            const linkId = `${subject}-${predicate}-${object}`;
+                            if (!linkSet.has(linkId)) {
+                                linkSet.add(linkId);
+                                allLinks.push({
+                                    source: subject,
+                                    target: object,
+                                    predicate: extractName(predicate),
+                                    predicateUri: predicate,
+                                    id: linkId
+                                });
+                            }
+                        }
+                    });
+                }
+                
+                // Convert node map to array
+                allNodes = Array.from(nodeMap.values());
+                
+                console.log(`Loaded ${allNodes.length} nodes and ${allLinks.length} links`);
+                
+                // Apply initial filters
+                applyNodeLimit();
+                
+                // Hide loading indicator
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                
+            } catch (error) {
+                console.error('Error loading ontology data:', error);
+                document.getElementById('loadingIndicator').innerHTML = 
+                    `<p class="text-red-600">Error loading data: ${error.message}</p>`;
+            }
+        }
+        
+        // Populate properties checkboxes
+        function populatePropertiesCheckboxes() {
+            const container = document.getElementById('propertiesContainer');
+            container.innerHTML = '';
+            
+            objectProperties.forEach(property => {
+                const div = document.createElement('div');
+                div.className = 'property-checkbox';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `prop_${property.name}`;
+                checkbox.value = property.uri;
+                checkbox.checked = true; // Default to all selected
+                selectedProperties.add(property.uri);
+                
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.textContent = property.label;
+                label.className = 'text-sm cursor-pointer';
+                
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                container.appendChild(div);
+            });
+            
+            updateActivePropertiesCount();
+        }
+        
+        // Apply node limit
+        function applyNodeLimit() {
+            // Limit nodes
+            nodes = allNodes.slice(0, nodeLimit);
+            const nodeIds = new Set(nodes.map(d => d.id));
+            
+            // Filter links to only include those between visible nodes
+            links = allLinks.filter(d => 
+                nodeIds.has(d.source.id || d.source) && 
+                nodeIds.has(d.target.id || d.target)
+            );
+            
+            // Apply property filter
+            applyPropertyFilter();
+        }
+        
+        // Apply property filter
+        function applyPropertyFilter() {
+            if (selectedProperties.size === 0) {
+                // No properties selected, show no links
+                links = [];
+            } else {
+                // Filter links by selected properties
+                const nodeIds = new Set(nodes.map(d => d.id));
+                links = allLinks.filter(d => 
+                    nodeIds.has(d.source.id || d.source) && 
+                    nodeIds.has(d.target.id || d.target) &&
+                    selectedProperties.has(d.predicateUri)
+                );
+            }
+            
+            // Initialize graph
+            initializeGraph();
+            updateLegend();
+            updateStatistics();
+        }
+        
+        // Initialize graph visualization
+        function initializeGraph() {
+            // Clear previous graph
+            container.selectAll('*').remove();
+            
+            if (nodes.length === 0) {
+                return;
+            }
+            
+            // Create force simulation
+            simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => getNodeSize(d) + 5));
+            
+            // Create links
+            linkElements = container.append('g')
+                .selectAll('line')
+                .data(links)
+                .enter().append('line')
+                .attr('class', 'link')
+                .attr('stroke', '#999')
+                .attr('stroke-opacity', 0.6)
+                .attr('stroke-width', 1.5);
+            
+            // Create nodes
+            nodeElements = container.append('g')
+                .selectAll('circle')
+                .data(nodes)
+                .enter().append('circle')
+                .attr('class', 'node')
+                .attr('r', d => getNodeSize(d))
+                .attr('fill', d => getNodeColor(d))
+                .attr('stroke', d => d3.rgb(getNodeColor(d)).darker(1))
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended))
+                .on('mouseover', showTooltip)
+                .on('mouseout', hideTooltip)
+                .on('click', handleNodeClick);
+            
+            // Create labels
+            labelElements = container.append('g')
+                .selectAll('text')
+                .data(nodes)
+                .enter().append('text')
+                .attr('class', 'node-label')
+                .text(d => d.label)
+                .style('display', showLabels ? 'block' : 'none');
+            
+            // Update positions on simulation tick
+            simulation.on('tick', () => {
+                linkElements
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+                
+                nodeElements
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+                
+                labelElements
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y + 4);
+            });
+        }
+        
+        // Get node color based on type
+        function getNodeColor(d) {
+            return nodeColors[d.type] || nodeColors.Other;
+        }
+        
+        // Get node size based on type
+        function getNodeSize(d) {
+            return nodeSizes[d.type] || nodeSizes.Other;
+        }
+        
+        // Show tooltip on node hover
+        function showTooltip(event, d) {
+            const typesList = d.types.map(t => extractName(t)).join('<br>');
+            
+            tooltip
+                .style('display', 'block')
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px')
+                .html(`
+                    <strong>${d.label}</strong><br>
+                    <strong>Type:</strong> ${d.type}<br>
+                    <strong>URI:</strong> ${d.id}<br>
+                    ${typesList ? `<strong>RDF Types:</strong><br>${typesList}` : ''}
+                `);
+        }
+        
+        // Hide tooltip
+        function hideTooltip() {
+            tooltip.style('display', 'none');
+        }
+        
+        // Handle node click
+        function handleNodeClick(event, d) {
+            if (d.type === 'Pokemon') {
+                window.open(`/pokemon/${d.label}`, '_blank');
+            }
+        }
+        
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+        
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+        
+        // Update legend
+        function updateLegend() {
+            const legend = d3.select('#legend');
+            legend.html('');
+            
+            Object.entries(nodeColors).forEach(([type, color]) => {
+                const count = nodes.filter(d => d.type === type).length;
+                if (count > 0) {
+                    const item = legend.append('div')
+                        .attr('class', 'flex items-center mb-2');
+                    
+                    item.append('div')
+                        .attr('class', 'w-4 h-4 rounded-full mr-2')
+                        .style('background-color', color);
+                    
+                    item.append('span')
+                        .text(`${type} (${count})`);
+                }
+            });
+        }
+        
+        // Update statistics
+        function updateStatistics() {
+            document.getElementById('totalNodes').textContent = allNodes.length;
+            document.getElementById('totalEdges').textContent = allLinks.length;
+            document.getElementById('visibleNodes').textContent = nodes.length;
+            document.getElementById('visibleEdges').textContent = links.length;
+        }
+        
+        // Update active properties count
+        function updateActivePropertiesCount() {
+            document.getElementById('activeProperties').textContent = selectedProperties.size;
+        }
+        
+        // Filter nodes by class
+        function filterByClass(classUri) {
+            if (classUri === 'all') {
+                // Show all nodes (up to limit)
+                applyNodeLimit();
+            } else {
+                // Filter by class
+                const filteredNodes = allNodes.filter(node => 
+                    node.types.includes(classUri)
+                ).slice(0, nodeLimit);
+                
+                nodes = filteredNodes;
+                const nodeIds = new Set(nodes.map(d => d.id));
+                
+                // Filter links
+                links = allLinks.filter(d => 
+                    nodeIds.has(d.source.id || d.source) && 
+                    nodeIds.has(d.target.id || d.target) &&
+                    selectedProperties.has(d.predicateUri)
+                );
+                
+                initializeGraph();
+                updateLegend();
+                updateStatistics();
+            }
+        }
+        
+        // Filter nodes by search term
+        function filterBySearch(searchTerm) {
+            if (!nodeElements) return;
+            
+            if (!searchTerm) {
+                // Show all nodes
+                nodeElements.style('opacity', 1);
+                linkElements.style('opacity', 0.6);
+                labelElements.style('opacity', 1);
+            } else {
+                // Filter by search term
+                nodeElements.style('opacity', d => {
+                    const isMatch = 
+                        d.label.toLowerCase().includes(searchTerm) || 
+                        d.id.toLowerCase().includes(searchTerm) ||
+                        d.type.toLowerCase().includes(searchTerm);
+                    return isMatch ? 1 : 0.1;
+                });
+                
+                linkElements.style('opacity', 0.6);
+                labelElements.style('opacity', d => {
+                    const isMatch = 
+                        d.label.toLowerCase().includes(searchTerm) || 
+                        d.id.toLowerCase().includes(searchTerm) ||
+                        d.type.toLowerCase().includes(searchTerm);
+                    return isMatch ? 1 : 0.1;
+                });
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('loadButton').addEventListener('click', loadOntologyData);
+        
+        document.getElementById('nodeSlider').addEventListener('input', function(e) {
+            nodeLimit = parseInt(e.target.value);
+            document.getElementById('nodeCount').textContent = nodeLimit;
+        });
+        
+        document.getElementById('applyNodeLimit').addEventListener('click', function() {
+            applyNodeLimit();
+        });
+        
+        document.getElementById('selectAllProperties').addEventListener('click', function() {
+            selectedProperties.clear();
+            objectProperties.forEach(prop => selectedProperties.add(prop.uri));
+            
+            document.querySelectorAll('#propertiesContainer input[type="checkbox"]').forEach(cb => {
+                cb.checked = true;
+            });
+            
+            updateActivePropertiesCount();
+        });
+        
+        document.getElementById('deselectAllProperties').addEventListener('click', function() {
+            selectedProperties.clear();
+            
+            document.querySelectorAll('#propertiesContainer input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            
+            updateActivePropertiesCount();
+        });
+        
+        document.getElementById('applyPropertyFilter').addEventListener('click', function() {
+            // Update selected properties from checkboxes
+            selectedProperties.clear();
+            document.querySelectorAll('#propertiesContainer input[type="checkbox"]:checked').forEach(cb => {
+                selectedProperties.add(cb.value);
+            });
+            
+            updateActivePropertiesCount();
+            applyPropertyFilter();
+        });
+        
+        document.getElementById('classFilter').addEventListener('change', function(e) {
+            filterByClass(e.target.value);
+        });
+        
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            filterBySearch(e.target.value.toLowerCase());
+        });
+        
+        document.getElementById('resetView').addEventListener('click', function() {
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity
+            );
+        });
+        
+        document.getElementById('toggleLabels').addEventListener('click', function() {
+            showLabels = !showLabels;
+            if (labelElements) {
+                labelElements.style('display', showLabels ? 'block' : 'none');
+            }
+        });
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load data automatically
+            loadOntologyData();
+        });
+    </script>
+</body>
+</html>
