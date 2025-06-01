@@ -11,8 +11,7 @@ from app.ontology import clear_repository, load_ontology_to_graphdb, get_reposit
 main = Blueprint("main", __name__)
 
 # deafault values
-ontology_base = "./Ontology/pokemon_ontology_base.ttl"
-ontology_file = "./Ontology/pokemon_povoada.ttl"
+ontology_file = "./Ontology/pokemon_new_povoada_withmoves.ttl"
 repository_url = "http://localhost:7200"
 repository_name = "pokentology"
 

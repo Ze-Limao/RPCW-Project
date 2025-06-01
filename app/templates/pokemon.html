@@ -178,13 +178,14 @@
                     <ul class="space-y-2">
                         {% for key, value in pokemon.relations.items() %}
                         {% if key not in ['hasType', 'normalDamage', 'effectiveness'] %}
-                        <li class="flex justify-between py-1">
-                            <span class="text-gray-700 capitalize">{{ key.replace('_', ' ') }}</span>
-                            <div>
-                                {%for val in value %}
+                        <li class="flex items-start justify-between py-1">
+                            <span class="text-gray-700 capitalize min-w-[120px] pr-2">{{ key.replace('_', ' ') }}</span>
+                            <div class="overflow-x-auto overflow-hidden flex space-x-2 w-max">
+                                {% for val in value %}
                                 {% set color = type_colors.get(val | lower, 'bg-gray-500') %}
                                 <a href="/pokemon/{{val}}">
-                                    <span class="px-4 py-1 rounded-full text-sm {{color}} text-white mx-1 hover:py-2">
+                                    <span
+                                        class="px-4 py-1 rounded-full text-sm {{color}} text-white whitespace-nowrap hover:py-2">
                                         {{ val }}
                                     </span>
                                 </a>

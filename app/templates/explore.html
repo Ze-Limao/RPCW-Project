@@ -43,11 +43,12 @@
 
     <!-- Main Content -->
     <div class="container mx-auto px-4 py-8">
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-6xl mx-auto">
 
             <h1 class="text-3xl font-bold text-gray-800 mb-6">Pokemon Ontology Explorer</h1>
+            
             <!-- Discrete Statistics Bar -->
-            <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+            <div class="max-w-6xl mx-auto bg-white rounded-lg shadow-sm overflow-hidden mb-6">
                 <div class="p-3 flex flex-wrap justify-between items-center text-sm">
                     <div class="flex items-center">
                         <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
@@ -73,7 +74,7 @@
             </div>
 
             <!-- Main Explorer Interface -->
-            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Class Selection Panel -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="relative">
@@ -123,13 +124,13 @@
                 </div>
 
                 <!-- Instance Display Panel -->
-                <div class="md:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="relative">
                         <div id="instance-header"
                             class="absolute inset-0 bg-gradient-to-r from-green-400 to-green-600 rounded-t-xl"></div>
                         <div class="relative px-6 py-4 flex justify-between items-center">
                             <h2 id="instance-title" class="text-xl font-bold text-white">Pokemon Instances</h2>
-                            <div class="bg-white rounded-full px-2 py-1 text-xs font-medium text-green-600">
+                            <div class="bg-white rounded-full px-2 py-1 text-xs font-medium text-green-600" id="instance-count-container">
                                 <span id="instance-count">{{ pokemon_list|length }}</span> instances
                             </div>
                         </div>
@@ -158,58 +159,51 @@
                             </div>
                         </div>
 
-                        <!-- Pokémon Grid -->
-                        <div>
-                            <div id="pokemon-grid"
-                                class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-1">
+                        <!-- Universal Instances Grid Container -->
+                        <div id="instances-container" class="max-h-[500px] overflow-y-auto pr-1">
+                            
+                            <!-- Pokemon Grid (Default) -->
+                            <div id="pokemon-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 instances-grid" data-class="Pokemon">
                                 {% for p in pokemon_list %}
-                                <a href="/pokemon/{{ p.name }}" class="block pokemon-instance">
-                                    <div
-                                        class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                                        <div
-                                            class="h-20 bg-gradient-to-r from-gray-100 to-gray-300 flex items-center justify-center">
+                                <a href="/pokemon/{{ p.name }}" class="block instance-item" data-name="{{ p.name|lower }}" data-id="{{ p.pokedex_number }}">
+                                    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                                        <div class="h-20 bg-gradient-to-r from-gray-100 to-gray-300 flex items-center justify-center">
                                             <img src="https://img.pokemondb.net/sprites/home/normal/{{p.name}}.png"
-                                                alt=" " class="h-16 w-16 object-contain drop-shadow-lg">
+                                                alt="{{ p.name }}" class="h-16 w-16 object-contain drop-shadow-lg">
                                         </div>
                                         <div class="p-2 text-center">
-                                            <h3 class="font-medium">{{ p.name }}</h3>
+                                            <h3 class="font-medium text-sm">{{ p.name }}</h3>
                                             <p class="text-xs text-gray-500">#{{ p.pokedex_number }}</p>
                                         </div>
                                     </div>
                                 </a>
                                 {% endfor %}
                             </div>
-                        </div>
 
-                        <!-- Other Classes Grid -->
-                        <div class="mt-6">
-                            <div id="other-classes-grid"
-                                class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-1">
-                                {% for class_name, instances in classes.items() %}
-                                {% if class_name != 'Pokemon' %}
+                            <!-- Other Classes Grids -->
+                            {% for class_name, instances in classes.items() %}
+                            {% if class_name != 'Pokemon' %}
+                            <div id="{{ class_name|lower }}-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 instances-grid hidden" data-class="{{ class_name }}">
                                 {% for instance in instances %}
-                                <a href="/pokemon/{{ instance }}" class="block">
-                                    <div
-                                        class="bg-white w-40 rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                                        <div
-                                            class="h-20 w-40 bg-gradient-to-r from-gray-100 to-gray-300 flex items-center justify-center">
+                                <a href="/pokemon/{{ instance }}" class="block instance-item" data-name="{{ instance|lower }}">
+                                    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                                        <div class="h-20 bg-gradient-to-r from-gray-100 to-gray-300 flex items-center justify-center">
                                             <div class="flex items-center justify-center">
-                                                <img src="static/images/logo.png" alt=" "
-                                                    class="object-contain drop-shadow-lg">
+                                                <img src="static/images/logo.png" alt="{{ instance }}" class="object-contain drop-shadow-lg">
                                             </div>
                                         </div>
                                         <div class="p-2 text-center">
-                                            <h3 class="font-medium">{{ instance }}</h3>
+                                            <h3 class="font-medium text-sm">{{ instance }}</h3>
                                             <p class="text-xs text-gray-500">{{ class_name }}</p>
                                         </div>
                                     </div>
                                 </a>
                                 {% endfor %}
-                                {% endif %}
-                                {% endfor %}
                             </div>
-                        </div>
+                            {% endif %}
+                            {% endfor %}
 
+                        </div>
                     </div>
                 </div>
             </div>
@@ -225,6 +219,48 @@
     </footer>
 
     <script>
+        // Color mapping for different classes
+        const colorMap = {
+            'Pokemon': { 
+                header: 'from-green-400 to-green-600', 
+                pokeball: 'bg-green-500', 
+                text: 'text-green-600',
+                badge: 'bg-green-100 text-green-800'
+            },
+            'Type': { 
+                header: 'from-red-400 to-red-600', 
+                pokeball: 'bg-red-500', 
+                text: 'text-red-600',
+                badge: 'bg-red-100 text-red-800'
+            },
+            'Move': { 
+                header: 'from-blue-400 to-blue-600', 
+                pokeball: 'bg-blue-500', 
+                text: 'text-blue-600',
+                badge: 'bg-blue-100 text-blue-800'
+            },
+            'Ability': { 
+                header: 'from-purple-400 to-purple-600', 
+                pokeball: 'bg-purple-500', 
+                text: 'text-purple-600',
+                badge: 'bg-purple-100 text-purple-800'
+            },
+            'Generation': { 
+                header: 'from-yellow-400 to-yellow-600', 
+                pokeball: 'bg-yellow-500', 
+                text: 'text-yellow-600',
+                badge: 'bg-yellow-100 text-yellow-800'
+            },
+            'Region': { 
+                header: 'from-indigo-400 to-indigo-600', 
+                pokeball: 'bg-indigo-500', 
+                text: 'text-indigo-600',
+                badge: 'bg-indigo-100 text-indigo-800'
+            }
+        };
+
+        let currentClass = 'Pokemon';
+
         // Class search functionality
         document.getElementById('class-search').addEventListener('input', function (e) {
             const searchTerm = e.target.value.toLowerCase();
@@ -243,71 +279,58 @@
         // Instance search functionality
         document.getElementById('instance-search').addEventListener('input', function (e) {
             const searchTerm = e.target.value.toLowerCase();
-            const activeClass = document.querySelector('.class-button.bg-blue-50').getAttribute('data-class');
-
-            if (activeClass === 'Pokemon') {
-                // Search in Pokemon instances
-                const pokemonInstances = document.querySelectorAll('.pokemon-instance');
-                pokemonInstances.forEach(instance => {
-                    const name = instance.querySelector('h3').textContent.toLowerCase();
-                    const id = instance.querySelector('p').textContent.toLowerCase();
-                    if (name.includes(searchTerm) || id.includes(searchTerm)) {
-                        instance.style.display = 'block';
-                    } else {
-                        instance.style.display = 'none';
-                    }
-                });
-            } else {
-                // Search in other class instances
-                const instancesContainer = document.querySelector(`.class-instances[data-class="${activeClass}"]`);
-                const instances = instancesContainer.querySelectorAll('div.bg-white');
-
+            const currentGrid = document.querySelector(`.instances-grid[data-class="${currentClass}"]`);
+            
+            if (currentGrid) {
+                const instances = currentGrid.querySelectorAll('.instance-item');
+                let visibleCount = 0;
+                
                 instances.forEach(instance => {
-                    const name = instance.querySelector('h3').textContent.toLowerCase();
-                    if (name.includes(searchTerm)) {
+                    const name = instance.getAttribute('data-name');
+                    const id = instance.getAttribute('data-id');
+                    
+                    if (name.includes(searchTerm) || (id && id.includes(searchTerm))) {
                         instance.style.display = 'block';
+                        visibleCount++;
                     } else {
                         instance.style.display = 'none';
                     }
                 });
+                
+                // Update instance count
+                document.getElementById('instance-count').textContent = visibleCount;
             }
         });
 
         // Select class function
         function selectClass(className) {
+            currentClass = className;
+            
             // Reset all class buttons
             const classButtons = document.querySelectorAll('.class-button');
             classButtons.forEach(button => {
                 button.classList.remove('bg-blue-50');
                 button.classList.add('hover:bg-blue-50');
                 const badge = button.querySelector('span:last-child');
-                badge.classList.remove('bg-blue-100', 'text-blue-800');
-                badge.classList.add('bg-gray-100', 'text-gray-800');
+                badge.className = 'text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full';
             });
 
             // Highlight selected class
             const selectedButton = document.querySelector(`.class-button[data-class="${className}"]`);
-            selectedButton.classList.add('bg-blue-50');
-            selectedButton.classList.remove('hover:bg-blue-50');
-            const badge = selectedButton.querySelector('span:last-child');
-            badge.classList.add('bg-blue-100', 'text-blue-800');
-            badge.classList.remove('bg-gray-100', 'text-gray-800');
+            if (selectedButton) {
+                selectedButton.classList.add('bg-blue-50');
+                selectedButton.classList.remove('hover:bg-blue-50');
+                const badge = selectedButton.querySelector('span:last-child');
+                const colors = colorMap[className] || colorMap['Pokemon'];
+                badge.className = `text-xs ${colors.badge} px-2 py-0.5 rounded-full`;
+            }
 
-            // Update instance panel title and count
+            // Update instance panel title
             document.getElementById('instance-title').textContent = `${className} Instances`;
 
-            // Update header and pokeball colors based on class
-            const colorMap = {
-                'Pokemon': { header: 'from-green-400 to-green-600', pokeball: 'bg-green-500', text: 'text-green-600' },
-                'Type': { header: 'from-red-400 to-red-600', pokeball: 'bg-red-500', text: 'text-red-600' },
-                'Move': { header: 'from-blue-400 to-blue-600', pokeball: 'bg-blue-500', text: 'text-blue-600' },
-                'Ability': { header: 'from-purple-400 to-purple-600', pokeball: 'bg-purple-500', text: 'text-purple-600' },
-                'Generation': { header: 'from-yellow-400 to-yellow-600', pokeball: 'bg-yellow-500', text: 'text-yellow-600' },
-                'Region': { header: 'from-indigo-400 to-indigo-600', pokeball: 'bg-indigo-500', text: 'text-indigo-600' }
-            };
-
-            const colors = colorMap[className] || { header: 'from-gray-400 to-gray-600', pokeball: 'bg-gray-500', text: 'text-gray-600' };
-
+            // Update colors
+            const colors = colorMap[className] || colorMap['Pokemon'];
+            
             // Update header gradient
             const headerElement = document.getElementById('instance-header');
             headerElement.className = `absolute inset-0 bg-gradient-to-r ${colors.header} rounded-t-xl`;
@@ -316,29 +339,24 @@
             const pokeballCenter = document.getElementById('pokeball-center');
             pokeballCenter.className = `w-5 h-5 ${colors.pokeball} rounded-full`;
 
-            // Update instance count color
-            const instanceCountElement = document.querySelector('.bg-white.rounded-full');
-            instanceCountElement.className = `bg-white rounded-full px-2 py-1 text-xs font-medium ${colors.text}`;
+            // Update instance count container color
+            const instanceCountContainer = document.getElementById('instance-count-container');
+            instanceCountContainer.className = `bg-white rounded-full px-2 py-1 text-xs font-medium ${colors.text}`;
 
-            // Show instances for the selected class
-            if (className === 'Pokemon') {
-                // Show Pokemon instances
-                document.querySelectorAll('.pokemon-instance').forEach(el => el.style.display = 'block');
-                document.querySelectorAll('.class-instances').forEach(el => el.style.display = 'none');
-                document.getElementById('instance-count').textContent = document.querySelectorAll('.pokemon-instance').length;
-            } else {
-                // Hide Pokemon instances, show selected class instances
-                document.querySelectorAll('.pokemon-instance').forEach(el => el.style.display = 'none');
-                document.querySelectorAll('.class-instances').forEach(el => el.style.display = 'none');
+            // Hide all grids
+            const allGrids = document.querySelectorAll('.instances-grid');
+            allGrids.forEach(grid => {
+                grid.classList.add('hidden');
+            });
 
-                const instancesContainer = document.querySelector(`.class-instances[data-class="${className}"]`);
-                if (instancesContainer) {
-                    instancesContainer.style.display = 'grid';
-                    instancesContainer.className = 'grid grid-cols-2 sm:grid-cols-3 gap-3 class-instances';
-                    document.getElementById('instance-count').textContent = instancesContainer.querySelectorAll('div.bg-white').length;
-                } else {
-                    document.getElementById('instance-count').textContent = '0';
-                }
+            // Show selected class grid
+            const targetGrid = document.querySelector(`.instances-grid[data-class="${className}"]`);
+            if (targetGrid) {
+                targetGrid.classList.remove('hidden');
+                
+                // Count visible instances
+                const visibleInstances = targetGrid.querySelectorAll('.instance-item:not([style*="display: none"])');
+                document.getElementById('instance-count').textContent = visibleInstances.length;
             }
 
             // Reset search
@@ -347,11 +365,7 @@
 
         // Initialize with Pokemon class selected
         document.addEventListener('DOMContentLoaded', function () {
-            // Select Pokemon by default if available
-            const pokemonButton = document.querySelector('.class-button[data-class="Pokemon"]');
-            if (pokemonButton) {
-                selectClass('Pokemon');
-            }
+            selectClass('Pokemon');
         });
     </script>
 </body>
