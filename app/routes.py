@@ -6,7 +6,7 @@ from rdflib import Graph, URIRef, Literal
 from rdflib.namespace import RDF
 import requests
 from app.queries import get_ontology_stats, get_ontology_classes, get_pokemon_by_name, get_pokemons, sparql_get_query, sparql_query
-from app.ontology import clear_repository, load_ontology_to_graphdb, get_repository_info, update_ontology
+from app.ontology import clear_repository, load_ontology_to_graphdb, get_repository_info, update_ontology, load_config
 
 main = Blueprint("main", __name__)
 
@@ -18,7 +18,8 @@ repository_name = "pokentology"
 
 @main.route('/')
 def index():
-    load_ontology_to_graphdb(ontology_file, repository_url, repository_name)
+    if load_config().get("url") == "":
+        load_ontology_to_graphdb(ontology_file, repository_url, repository_name)
     return render_template('home.html')
 
 @main.route('/pokemon/<instance>')
@@ -41,7 +42,7 @@ def generate_ontology():
     if request.method == 'POST':
         repo_name = request.form.get('repository_name', 'pokentology')
         try:
-            load_ontology_to_graphdb(ontology_base, repository_url, repo_name, True)
+            load_ontology_to_graphdb(ontology_file, repository_url, repo_name)
             message = f"Ontology successfully generated and loaded into repository '{repo_name}'"
         except Exception as e:
             error = f"Ontology generation failed: {str(e)}"
@@ -211,7 +212,7 @@ def delete_ontology():
             return jsonify({"error": f"Repository '{repo_name}' not found"}), 404
         
         # Delete all statements in the repository
-        delete_url = f"{repository_url}/repositories/{repo_name}/statements"
+        delete_url = f"{repository_url}/repositories/{repo_name}"
         print(f"Making DELETE request to: {delete_url}")
         
         response = requests.delete(

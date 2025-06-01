@@ -56,13 +56,8 @@ def update_ontology(ontology_file, repository_url, repository_name):
     load_to_graphdb(ontology_file, repository_url, repository_name)
 
 
-def load_ontology_to_graphdb(ontology_file, repository_url, repository_name, base=False):
+def load_ontology_to_graphdb(ontology_file, repository_url, repository_name):
     config = load_config()
-
-    # caso já exista um repositorio
-    if config.get("url") and config.get("name") and config.get("prefix") and not base:
-        print("Configuração já existente.")
-        return
 
     # criar um novo repo
     config["url"] = repository_url
