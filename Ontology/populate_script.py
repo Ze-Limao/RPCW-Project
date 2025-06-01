@@ -4,15 +4,23 @@ import json
 import os
 import csv
 
+endpoint_item_category = "https://pokeapi.co/api/v2/item-category/?limit=60"
+
+endpoint_items = "https://pokeapi.co/api/v2/item?limit=2167"
+
+
+
 g = Graph()
 g.parse("pokemon_ontology_base.ttl", format="turtle")
 
-n = Namespace("http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology/")
+n = Namespace("http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#")
 
 pokemonset = set()
 abilitiesset = set()
 regionsset = set()
 typeset = set()
+itemsset = set()
+atributeitemset = set()
 
 pokemon_types = {
     "bug": "against_bug",
@@ -46,6 +54,10 @@ gen_regions = {
     "8" : "Galar",
     "9" : "Paldea",
 }
+
+###############################################################################
+################### First populate with the initial csv########################
+###############################################################################
 
 with open("./Dataset/final_pokemon.csv", "r", encoding="utf-8") as file:
     reader = csv.DictReader(file, delimiter=",")
@@ -153,8 +165,99 @@ with open("./Dataset/final_pokemon.csv", "r", encoding="utf-8") as file:
                 g.add((abilityURI, n.name, Literal(ability)))
                 abilitiesset.add(abilityURI)
             g.add((pokemonURI, n.hasAbility, abilityURI))
-        
-g.serialize(destination="pokemon_povoada.ttl", format="turtle")
+
+
+###############################################################################
+################### Itens with the pokeapi ####################################
+###############################################################################
+
+g.add((n.items, RDF.type, OWL.Class))
+
+g.add((n.ItemAttributes, RDF.type, OWL.Class))
+
+g.add((n.hasAtribute, RDF.type, OWL.ObjectProperty))
+g.add((n.hasAtribute, RDFS.domain, n.items))
+g.add((n.hasAtribute, RDFS.range, n.ItemAttributes))
+
+g.add((n.cost, RDF.type, OWL.DatatypeProperty))
+g.add((n.cost, RDFS.range, XSD.integer))
+
+g.add((n.effect, RDF.type, OWL.DatatypeProperty))
+g.add((n.effect, RDFS.range, XSD.string))
+
+g.add((n.itemID, RDF.type, OWL.DatatypeProperty))
+g.add((n.itemID, RDFS.range, XSD.integer))
+
+
+
+response = requests.get(endpoint_item_category)
+if response.status_code != 200:
+    print(f"Error fetching item categories: {response.status_code} - {response.text}")
+else:
+    for item_category in response.json()["results"]:
+        item_category_name = item_category["name"].replace(" ", "_")
+        item_category_name = item_category_name.replace("-", "_")
+        item_category_uri = URIRef(f"{n}{item_category_name}")
+        g.add((item_category_uri, RDF.type, OWL.Class))
+        g.add((item_category_uri, RDFS.subClassOf, n.items))
+
+##
+response_item = requests.get(endpoint_items)
+if response_item.status_code != 200:
+    print(f"Error fetching items: {response_item.status_code} - {response_item.text}")
+else:
+    for item in response_item.json()["results"]:
+        print(f"Processing item: {item['name']}")
+        item_name = item["name"].replace(" ", "_")
+        item_name = item_name.replace("-", "_")
+        item_uri = URIRef(f"{n}{item_name}")
+        if item_uri not in itemsset:
+            g.add((item_uri, RDF.type, OWL.NamedIndividual))
+            g.add((item_uri, n.name, Literal(item_name)))
+            response_item_details = requests.get(item["url"])
+            if response_item_details.status_code != 200:
+                print(f"Error fetching item details: {response_item_details.status_code} - {response_item_details.text}")
+                continue
+            else:
+                item_details = response_item_details.json()
+                print(f"Item details for: {item_name}")
+                for item_atribute in item_details["attributes"]:
+                    item_attribute_name = item_atribute["name"].replace(" ", "_")
+                    item_attribute_name = item_attribute_name.replace("-", "_")
+                    if item_attribute_name not in atributeitemset:
+                        item_attribute_uri = URIRef(f"{n}{item_attribute_name}")
+                        g.add((item_attribute_uri, RDF.type, OWL.NamedIndividual))
+                        g.add((item_attribute_uri, RDF.type, n.ItemAttributes))
+                        g.add((item_attribute_uri, n.name, Literal(item_attribute_name)))
+                        atributeitemset.add(item_attribute_uri)
+                    g.add((item_uri, n.hasAtribute, item_attribute_uri))
+
+                item_category = item_details["category"]
+                item_category_name2 = item_category["name"].replace(" ", "_")
+                item_category_name2 = item_category_name2.replace("-", "_")
+                item_category_uri2 = URIRef(f"{n}{item_category_name2}")
+                g.add((item_uri, RDF.type, item_category_uri2))
+                
+                print(f"Item category")
+
+                item_cost = item_details.get("cost", 0)
+                g.add((item_uri, n.cost, Literal(item_cost, datatype=XSD.integer)))
+                print(f"Item cost")
+
+                for item_effect in item_details["effect_entries"]:
+                    if item_effect["language"]["name"] == "en":
+                        effect = item_effect["effect"]
+                        g.add((item_uri, n.effect, Literal(effect, datatype=XSD.string)))
+                print(f"Item effect")
+
+                item_id = item_details.get("id", 0)
+                g.add((item_uri, n.itemID, Literal(item_id, datatype=XSD.integer)))
+                print(f"Item ID: {item_id}")
+            itemsset.add(item_uri)
+
+
+
+g.serialize(destination="pokemon_new_povoada2.ttl", format="turtle")
 print(len(g))
                 
 
