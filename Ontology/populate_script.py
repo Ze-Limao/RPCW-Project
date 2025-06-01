@@ -257,7 +257,7 @@ else:
 
 
 
-g.serialize(destination="pokemon_new_povoada2.ttl", format="turtle")
+g.serialize(destination="pokemon_new_povoada_withitems.ttl", format="turtle")
 print(len(g))
                 
 
