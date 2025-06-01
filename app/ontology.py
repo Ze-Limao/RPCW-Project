@@ -6,23 +6,12 @@ CONFIG_PATH = "./app/config.json"
 
 def clear_repository():
     config = load_config()
-    # Construct the repository endpoint URL
-    endpoint_url = f"{config['url']}/repositories/{config['repository_name']}/statements"
 
-    # Send a DELETE request to clear the repository
-    response = requests.delete(endpoint_url)
-
-    # Check the response status
-    if response.status_code == 204:
-        print("Repository successfully cleared.")
-        config["url"] = None
-        config["name"] = None
-        config["prefix"] = None
-        
-        save_config(config)
-    else:
-        print(f"Failed to clear repository. Status code: {response.status_code}")
-        print(f"Response: {response.text}")
+    config["url"] = ""
+    config["name"] = ""
+    config["prefix"] = ""
+    
+    save_config(config)
 
 def load_config(config_path=CONFIG_PATH):
     with open(config_path, "r") as file:

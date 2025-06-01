@@ -201,19 +201,61 @@ def download_ontology():
 
 @main.route('/api/delete-ontology', methods=['POST'])
 def delete_ontology():
-    repo_name = request.form.get('repository_name', 'pokentology')
-    
     try:
+        repo_name = request.form.get('repository_name', 'pokentology')
+        print(f"Attempting to delete ontology from repository: {repo_name}")
+        
+        # First, check if the repository exists
+        check_response = requests.get(f"{repository_url}/repositories/{repo_name}")
+        if check_response.status_code == 404:
+            return jsonify({"error": f"Repository '{repo_name}' not found"}), 404
+        
         # Delete all statements in the repository
+        delete_url = f"{repository_url}/repositories/{repo_name}/statements"
+        print(f"Making DELETE request to: {delete_url}")
+        
         response = requests.delete(
-            f"{repository_url}/repositories/{repo_name}/statements"
+            delete_url,
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            timeout=30  # Add timeout to prevent hanging
         )
         
-        if response.status_code == 204:
-            clear_repository()
-            return jsonify({"success": True, "message": "Ontology deleted successfully"})
+        print(f"GraphDB response status: {response.status_code}")
+        print(f"GraphDB response text: {response.text}")
+        
+        # GraphDB typically returns 204 for successful deletion
+        if response.status_code in [200, 204]:
+            try:
+                # Call clear_repository only if it exists and is needed
+                clear_repository()
+                print("Local repository cleared successfully")
+            except Exception as clear_error:
+                print(f"Warning: Failed to clear local repository: {str(clear_error)}")
+                # Don't fail the entire operation if local clear fails
+            
+            return jsonify({
+                "success": True, 
+                "message": f"Ontology deleted successfully from repository '{repo_name}'"
+            })
         else:
-            return jsonify({"error": f"Deletion failed: {response.text}"}), 400
+            error_msg = f"GraphDB deletion failed with status {response.status_code}: {response.text}"
+            print(error_msg)
+            return jsonify({"error": error_msg}), 400
+    
+    except requests.exceptions.ConnectionError as e:
+        error_msg = f"Cannot connect to GraphDB at {repository_url}. Is GraphDB running?"
+        print(error_msg)
+        return jsonify({"error": error_msg}), 500
+    
+    except requests.exceptions.Timeout as e:
+        error_msg = "Request to GraphDB timed out"
+        print(error_msg)
+        return jsonify({"error": error_msg}), 500
     
     except Exception as e:
-        return jsonify({"error": f"Error: {str(e)}"}), 500
+        error_msg = f"Unexpected error during deletion: {str(e)}"
+        print(f"Full error traceback: {traceback.format_exc()}")
+        return jsonify({"error": error_msg}), 500

@@ -1,4 +1,5 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
+from app.ontology import load_config
 
 prefix = "<http://www.semanticweb.org/gonca/ontologies/2025/pokemon_ontology#>"
 clean_prefix = prefix.strip("<>")
@@ -129,14 +130,24 @@ def get_ontology_stats():
 
 
 def sparql_query(query):
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/pokentology/statements")
+    config = load_config()
+    if config.get("url") and config.get("name"):
+        name = config["name"]
+    else:
+        name = "pokentology"
+    sparql = SPARQLWrapper(f"http://localhost:7200/repositories/{name}/statements")
     sparql.setMethod('POST')
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
     return sparql.query().convert()
 
 def sparql_get_query(query):
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/pokentology")
+    config = load_config()
+    if config.get("url") and config.get("name"):
+        name = config["name"]
+    else:
+        name = "pokentology"
+    sparql = SPARQLWrapper(f"http://localhost:7200/repositories/{name}")
     sparql.setMethod('GET')
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)

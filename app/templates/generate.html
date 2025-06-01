@@ -55,8 +55,8 @@
             <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6">
                 <div class="p-6">
                     <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-semibold text-gray-800">Ontology Generation Options</h2>
-                </div>
+                        <h2 class="text-xl font-semibold text-gray-800">Ontology Generation Options</h2>
+                    </div>
                     <form method="POST" action="/generate">
                         <div>
                             <div class="mt-4 space-y-4">
@@ -191,23 +191,41 @@
         function deleteOntology() {
             if (confirm('Are you sure you want to delete the ontology? This action cannot be undone.')) {
                 const formData = new FormData();
-                formData.append('repository_name', '{{ repository_info.repository_name if repository_info else "pokentology" }}');
+                const repositoryName = '{{ repository_info.repository_name if repository_info else "pokentology" }}';
+                formData.append('repository_name', repositoryName);
+                
+                // Show loading state
+                const deleteButton = event.target;
+                const originalText = deleteButton.innerHTML;
+                deleteButton.innerHTML = 'Deleting...';
+                deleteButton.disabled = true;
 
                 fetch('/api/delete-ontology', {
                     method: 'POST',
                     body: formData
                 })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => Promise.reject(err));
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             alert('Ontology deleted successfully!');
                             location.reload();
                         } else {
-                            alert('Error: ' + data.error);
+                            alert('Error: ' + (data.error || 'Unknown error occurred'));
                         }
                     })
                     .catch(error => {
-                        alert('Error: ' + error);
+                        console.error('Delete error:', error);
+                        alert('Error: ' + (error.error || error.message || 'Network error occurred'));
+                    })
+                    .finally(() => {
+                        // Restore button state
+                        deleteButton.innerHTML = originalText;
+                        deleteButton.disabled = false;
                     });
             }
         }
